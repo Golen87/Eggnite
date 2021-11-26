@@ -10,6 +10,8 @@ export class MainScene extends BaseScene {
 
 	create(): void {
 		// this.fade(false, 200, 0x000000);
+
+		this.add.image(this.CX, this.CY, "pika");
 	}
 
 	update(time: number, delta: number) {

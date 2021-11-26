@@ -1,7 +1,6 @@
 import "phaser";
 import { PreloadScene } from "./scripts/scenes/PreloadScene";
 import { MainScene } from "./scripts/scenes/MainScene";
-import { UIScene } from "./scripts/scenes/UIScene";
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.WEBGL,
@@ -13,7 +12,6 @@ const config: Phaser.Types.Core.GameConfig = {
 	scene: [
 		PreloadScene,
 		MainScene,
-		UIScene
 	],
 	plugins: {
 		global: [

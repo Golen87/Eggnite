@@ -66,7 +66,6 @@ module.exports = {
       patterns: [
         { from: 'pwa', to: '' },
         { from: 'static' },
-        { from: 'downloads', to: 'downloads' },
         // { from: 'src/assets', to: 'assets' },
         { from: 'src/assets/fonts', to: 'assets/fonts' },
         { from: 'src/style.css' },

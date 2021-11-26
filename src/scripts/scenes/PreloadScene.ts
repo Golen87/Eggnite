@@ -1,6 +1,5 @@
 import { BaseScene } from "./BaseScene";
 import { images, spritesheets, videos } from "../assets";
-import { language } from "../language/LanguageManager";
 import { GrayScalePostFilter } from "../pipelines/GrayScalePostFilter";
 import { BlurPostFilter } from "../pipelines/BlurPostFilter";
 
