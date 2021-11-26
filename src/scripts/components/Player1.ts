@@ -12,6 +12,8 @@ export class Player1 extends Player {
 			left: 'A',
 			right: 'D'
 		});
+
+		this.limit.right = 0.20 * scene.W; // Set right border for player 1
 	}
 
 	// update(time: number, delta: number) {
