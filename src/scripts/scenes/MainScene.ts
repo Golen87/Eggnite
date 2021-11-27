@@ -2,6 +2,7 @@ import { BaseScene } from "./BaseScene";
 import { RoundRectangle } from "../components/RoundRectangle";
 import { Player1 } from "../components/Player1";
 import { Player2 } from "../components/Player2";
+import { Dragon } from "../components/Dragon";
 import { Egg } from "../components/Egg";
 
 
@@ -10,7 +11,8 @@ export class MainScene extends BaseScene {
 
 	player1: Player1;
 	player2: Player2;
-	egg: Egg;
+	dragon: Dragon;
+	eggs: Egg[];
 
 
 	constructor() {
@@ -30,13 +32,31 @@ export class MainScene extends BaseScene {
 		this.player1 = new Player1(this, 0.1*this.W, this.CY);
 		this.player2 = new Player2(this, 0.9*this.W, this.CY);
 
-		this.egg = new Egg(this, this.CX, this.CY);
-		this.egg.setVelocity(140, 90);
+		this.dragon = new Dragon(this, this.CX, this.CY);
+
+		this.eggs = [];
+		this.dragon.on("shoot", this.onShootEgg.bind(this));
 	}
 
 	update(time: number, delta: number) {
 		this.player1.update(time, delta);
 		this.player2.update(time, delta);
-		this.egg.update(time, delta);
+		this.dragon.update(time, delta);
+
+		this.eggs.forEach((egg: Egg) => {
+			egg.update(time, delta);
+		});
+	}
+
+
+	// On dragon egg-timer
+	onShootEgg() {
+		const EGG_SPEED = 150;
+
+		let egg = new Egg(this, this.dragon.x, this.dragon.y);
+		egg.velocity.x = EGG_SPEED*this.dragon.facing.x;
+		egg.velocity.y = EGG_SPEED*this.dragon.facing.y;
+
+		this.eggs.push(egg);
 	}
 }
