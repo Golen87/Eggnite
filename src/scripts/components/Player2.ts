@@ -19,6 +19,7 @@ export class Player2 extends Player {
 			grab: '-'
 		});
 
-		scene.input.keyboard.on('keydown-MINUS', this.grab, this);
+		scene.input.keyboard.on('keydown-L', this.grab, this);
+		//scene.input.keyboard.on('keydown-MINUS', this.grab, this);
 	}
 }

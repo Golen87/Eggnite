@@ -16,6 +16,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 	// Movement
 	public velocity: Phaser.Math.Vector2;
 	public facing: Phaser.Math.Vector2; // Used to determine throwing dir
+	public following: Egg | null = null;
 	private border: { [key: string]: number };
 
 	// Shooting
@@ -105,11 +106,25 @@ export class Dragon extends Phaser.GameObjects.Container {
 		*/
 
 		// Simple rotation test
-		this.facing.rotate(-0.3*Math.PI * delta/1000);
+		//this.facing.rotate(-0.3*Math.PI * delta/1000);
+
+		let target = new Phaser.Math.Vector2();
+		if (this.following) {
+			target.add(this.following);
+			target.subtract(this);
+		}
+		target.normalize();
+		target.scale(0.01);
+
+		this.facing.add(target)
+		this.facing.normalize()
 
 		// Set direction
 		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG);
-		// this.angle -= 1;
+
+		// Set direction
+		//this.setAngle(target.angle() * Phaser.Math.RAD_TO_DEG - 90);
+		//this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG - 90);
 
 
 		// Shooting eggs
