@@ -62,13 +62,17 @@ export class Dragon extends Phaser.GameObjects.Container {
 		this.deathTimer = 0;
 
 		this.headAreas = [
-			new Phaser.Geom.Circle(  0,  10, 30), // Head
-			new Phaser.Geom.Circle(  0,  45, 15), // Nose
-			new Phaser.Geom.Circle( 30, -20, 15), // Horn
-			new Phaser.Geom.Circle(-30, -20, 15), // Horn
+			new Phaser.Geom.Circle( -5,   0, 25), // Head
+			new Phaser.Geom.Circle( 35,   0, 15), // Nose
+			new Phaser.Geom.Circle(-30, -22, 10), // Left Horn Bottom
+			new Phaser.Geom.Circle(-45, -25,  5), // Left Horn Mid
+			new Phaser.Geom.Circle(-55, -20,  5), // Left Horn Top
+			new Phaser.Geom.Circle(-30,  22, 10), // Right Horn Bottom
+			new Phaser.Geom.Circle(-45,  25,  5), // Right Horn Mid
+			new Phaser.Geom.Circle(-55,  20,  5), // Right Horn Bottom
 		];
 		this.weakAreas = [
-			new Phaser.Geom.Circle(0, -20, 20), // Back of head
+			new Phaser.Geom.Circle(-25, 0, 10), // Back of head
 		];
 	}
 
@@ -104,7 +108,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 		this.facing.rotate(-0.3*Math.PI * delta/1000);
 
 		// Set direction
-		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG - 90);
+		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG);
 		// this.angle -= 1;
 
 
