@@ -1,5 +1,6 @@
 import { BaseScene } from "./BaseScene";
 import { RoundRectangle } from "../components/RoundRectangle";
+import { Player } from "../components/Player";
 import { Player1 } from "../components/Player1";
 import { Player2 } from "../components/Player2";
 import { Dragon } from "../components/Dragon";
@@ -35,6 +36,13 @@ export class MainScene extends BaseScene {
 		this.dragon = new Dragon(this, this.CX, this.CY);
 
 		this.eggs = [];
+
+
+		// Callbacks
+		this.player1.on("grab", this.onGrab.bind(this, this.player1));
+		this.player2.on("grab", this.onGrab.bind(this, this.player2));
+		this.player1.on("throw", this.onThrow.bind(this, this.player1));
+		this.player2.on("throw", this.onThrow.bind(this, this.player2));
 		this.dragon.on("shoot", this.onShootEgg.bind(this));
 	}
 
@@ -58,5 +66,25 @@ export class MainScene extends BaseScene {
 		egg.velocity.y = EGG_SPEED*this.dragon.facing.y;
 
 		this.eggs.push(egg);
+	}
+
+	// On player clicking the grab-key
+	onGrab(player: Player) {
+		for (let egg of this.eggs) {
+			// Checks proximity
+			if (player.canGrab(egg)) {
+				player.heldEgg = egg;
+				egg.onGrab(player);
+				break;
+			}
+		}
+	}
+
+	// On player clicking the grab-key while holding an egg
+	onThrow(player: Player) {
+		if (player.heldEgg) {
+			player.heldEgg.onThrow(player);
+			player.heldEgg = null;
+		}
 	}
 }

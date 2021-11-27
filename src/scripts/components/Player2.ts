@@ -5,18 +5,20 @@ export class Player2 extends Player {
 	constructor(scene: BaseScene, x: number, y: number) {
 		super(scene, x, y);
 
+		this.facing.x = -1;
+
+		// Set left border for player 2
+		this.border.left = 0.8 * scene.W;
+
 		// Set up input-keys. Access with the keys-object
 		this.keys = scene.input.keyboard.addKeys({
 			up: 'up',
 			down: 'down',
 			left: 'left',
-			right: 'right'
+			right: 'right',
+			grab: '-'
 		});
 
-		this.limit.left = (1 - 0.20) * scene.W; // Set left border for player 2
+		scene.input.keyboard.on('keydown-MINUS', this.grab, this);
 	}
-
-	// update(time: number, delta: number) {
-		// super.update(time, delta);
-	// }
 }

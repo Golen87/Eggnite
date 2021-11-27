@@ -1,4 +1,8 @@
 import { BaseScene } from "../scenes/BaseScene";
+import { Egg } from "./Egg";
+
+const GRAB_RANGE = 30;
+
 
 export class Player extends Phaser.GameObjects.Container {
 	public scene: BaseScene;
@@ -11,10 +15,15 @@ export class Player extends Phaser.GameObjects.Container {
 	protected graphics: Phaser.GameObjects.Graphics;
 	protected sprite: Phaser.GameObjects.Sprite;
 
+	// Animation
+	protected walkTimer: number; // Increases while moving, modulo to set frame
+	public heldEgg: Egg | null;
+
 	// Movement
-	protected velocity: Phaser.Math.Vector2;
-	protected facing: Phaser.Math.Vector2; // Used to determine throwing dir
-	protected limit: { [key: string]: number }; 
+	protected inputVec: Phaser.Math.Vector2; // Just used for keyboard -> vector
+	public velocity: Phaser.Math.Vector2;
+	public facing: Phaser.Math.Vector2; // Used to determine throwing dir
+	protected border: { [key: string]: number }; 
 
 	constructor(scene: BaseScene, x: number, y: number) {
 		super(scene, x, y);
@@ -25,64 +34,110 @@ export class Player extends Phaser.GameObjects.Container {
 		this.sprite = scene.add.sprite(0, 0, "player", 0);
 		this.add(this.sprite); // Attach sprite to the Player-component
 
+		// Animation
+		this.walkTimer = 0;
+		this.heldEgg = null;
+		// walk 0, 1
+		// lift 4, 5
+		// hurt 8
+
 		// Debug graphics
 		this.graphics = scene.add.graphics();
 		this.add(this.graphics);
 
+		// Movement
+		this.inputVec = new Phaser.Math.Vector2(0, 0);
 		this.velocity = new Phaser.Math.Vector2(0, 0);
 		this.facing = new Phaser.Math.Vector2(1, 0);
-		this.limit = {
-			left: 16,
-			right: scene.W-16,
-			top: 16,
+		this.border = {
+			left: 8,
+			right: scene.W-8,
+			top: 8,
 			bottom: scene.H-16,
 		};
+
 	}
 
 	update(time: number, delta: number) {
+
+		// Keyboard input to vector
+		this.inputVec.reset();
+		this.inputVec.x = (this.keys.left.isDown ? -1 : 0) + (this.keys.right.isDown ? 1 : 0);
+		this.inputVec.y = (this.keys.up.isDown ? -1 : 0) + (this.keys.down.isDown ? 1 : 0);
+
 		// Movement
-		const speed = 25;
-		if (this.keys) {
-			if (this.keys.left.isDown) {
-				this.velocity.x -= speed;
-			}
-			if (this.keys.right.isDown) {
-				this.velocity.x += speed;
-			}
-			if (this.keys.down.isDown) {
-				this.velocity.y += speed;
-			}
-			if (this.keys.up.isDown) {
-				this.velocity.y -= speed;
-			}
-		}
+		const ACCELERATION = 30;
+		const MAX_SPEED = 100;
+
+		this.inputVec.scale(ACCELERATION);
+		this.velocity.scale(0.85); // Friction
+		this.velocity.add(this.inputVec);
+		this.velocity.limit(MAX_SPEED);
 
 		this.x += this.velocity.x * delta/1000;
 		this.y += this.velocity.y * delta/1000;
-		this.velocity.scale(0.9);
 
 		if (this.velocity.lengthSq() > 0) {
 			this.facing.copy(this.velocity);
 			this.facing.normalize();
 		}
 
-		if (this.x < this.limit.left) {
-			this.x = this.limit.left;
+		// Border collision
+		if (this.x < this.border.left) {
+			this.x = this.border.left;
 		}
-		if (this.x > this.limit.right) {
-			this.x = this.limit.right;
+		if (this.x > this.border.right) {
+			this.x = this.border.right;
 		}
-		if (this.y < this.limit.top) {
-			this.y = this.limit.top;
+		if (this.y < this.border.top) {
+			this.y = this.border.top;
 		}
-		if (this.y > this.limit.bottom) {
-			this.y = this.limit.bottom;
+		if (this.y > this.border.bottom) {
+			this.y = this.border.bottom;
+		}
+
+
+		// Animation
+
+		// Face sprite forward
+		this.sprite.flipX = (this.facing.x < 0);
+
+		// Walking animation
+		this.walkTimer += this.velocity.length() * delta/1000 / 12;
+		const walkFrame = Math.floor(this.walkTimer) % 2;
+		this.sprite.setFrame(walkFrame); // Walk is frame 0-1
+
+
+		// Egg
+		if (this.heldEgg) {
+			this.heldEgg.x = this.x;
+			this.heldEgg.y = this.y;
+			this.heldEgg.facing.copy(this.facing);
 		}
 
 
 		// Debug
 		this.graphics.clear();
-		this.graphics.lineStyle(4, 0xFF7700, 1.0);
+		this.graphics.lineStyle(1, 0x00FF00, 0.5);
 		this.graphics.lineBetween(0, 0, 20*this.facing.x, 20*this.facing.y);
+		this.graphics.strokeEllipse(0, 0, 2*GRAB_RANGE, 2*GRAB_RANGE);
+	}
+
+	canGrab(egg: Egg) {
+		let dist = Phaser.Math.Distance.BetweenPoints(this, egg);
+
+		return (dist < GRAB_RANGE && egg.canGrab());
+	}
+
+	grab() {
+		if (this.heldEgg) {
+			this.emit("throw");
+		}
+		else {
+			this.sprite.setFrame(4);
+			this.emit("grab");
+		}
+
+		// Emitted events are catched in MainScene with "player.on"
 	}
 }
