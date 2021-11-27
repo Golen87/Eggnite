@@ -38,6 +38,11 @@ export class MainScene extends BaseScene {
 		this.eggs = [];
 
 
+		// Instructions
+		this.createText(0, 0, 12, this.weights.regular, "#DDD", "WASD+F");
+		this.createText(this.W, 0, 12, this.weights.regular, "#DDD", "Arrow+minus").setOrigin(1,0);
+
+
 		// Callbacks
 		this.player1.on("grab", this.onGrab.bind(this, this.player1));
 		this.player2.on("grab", this.onGrab.bind(this, this.player2));
