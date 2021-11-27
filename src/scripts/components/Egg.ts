@@ -3,7 +3,7 @@ import { BaseScene } from "../scenes/BaseScene";
 export class Egg extends Phaser.GameObjects.Container {
 	public scene: BaseScene;
 
-	private circle: Phaser.GameObjects.Ellipse;
+	private sprite: Phaser.GameObjects.Sprite;
 
 	public velocity: Phaser.Math.Vector2;
 

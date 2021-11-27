@@ -9,6 +9,7 @@ export class Player extends Phaser.GameObjects.Container {
 	// Graphics
 	protected circle: Phaser.GameObjects.Ellipse;
 	protected graphics: Phaser.GameObjects.Graphics;
+	protected sprite: Phaser.GameObjects.Sprite;
 
 	// Movement
 	protected velocity: Phaser.Math.Vector2;
