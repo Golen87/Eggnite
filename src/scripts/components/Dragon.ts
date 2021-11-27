@@ -1,6 +1,9 @@
 import { BaseScene } from "../scenes/BaseScene";
+import { Egg } from "./Egg";
 
 const SHOOTING_TIMER = 5;
+const HURT_DURATION = 0.5;
+const DEATH_DURATION = 5; // Seconds
 
 
 export class Dragon extends Phaser.GameObjects.Container {
@@ -16,7 +19,14 @@ export class Dragon extends Phaser.GameObjects.Container {
 	private border: { [key: string]: number };
 
 	// Shooting
-	private timer: number;
+	private shootTimer: number;
+	private health: number;
+	private hurtTimer: number;
+	private deathTimer: number;
+
+	// Collision
+	private headAreas: Phaser.Geom.Circle[];
+	private weakAreas: Phaser.Geom.Circle[];
 
 	constructor(scene: BaseScene, x: number, y: number) {
 		super(scene, x, y);
@@ -46,7 +56,20 @@ export class Dragon extends Phaser.GameObjects.Container {
 			bottom: scene.H - size/2,
 		};
 
-		this.timer = SHOOTING_TIMER - 1;
+		this.shootTimer = SHOOTING_TIMER - 1;
+		this.health = 5;
+		this.hurtTimer = 0;
+		this.deathTimer = 0;
+
+		this.headAreas = [
+			new Phaser.Geom.Circle(  0,  10, 30), // Head
+			new Phaser.Geom.Circle(  0,  45, 15), // Nose
+			new Phaser.Geom.Circle( 30, -20, 15), // Horn
+			new Phaser.Geom.Circle(-30, -20, 15), // Horn
+		];
+		this.weakAreas = [
+			new Phaser.Geom.Circle(0, -20, 20), // Back of head
+		];
 	}
 
 	update(time: number, delta: number) {
@@ -78,25 +101,87 @@ export class Dragon extends Phaser.GameObjects.Container {
 		*/
 
 		// Simple rotation test
-		this.facing.rotate(0.3*Math.PI * delta/1000);
+		this.facing.rotate(-0.3*Math.PI * delta/1000);
 
 		// Set direction
-		this.sprite.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG - 90);
+		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG - 90);
+		// this.angle -= 1;
 
 
 		// Shooting eggs
-		this.timer += delta/1000;
-		if (this.timer > SHOOTING_TIMER) {
-			this.timer = 0;
+		this.shootTimer += delta/1000;
+		if (this.shootTimer > SHOOTING_TIMER) {
+			this.shootTimer = 0;
 			this.emit("shoot");
 		}
 
+		// Hurt animation
+		this.hurtTimer -= delta/1000;
+		if (this.hurtTimer > 0 || !this.alive) {
+			let blink = (Math.sin(50*time/1000) > 0);
+			this.sprite.setTint(blink ? 0xFF0000 : 0xFFFFFF);
+			this.sprite.setAlpha(0.75);
+			this.sprite.setOrigin(0.5 + 0.02 * Math.sin(35*time/1000), 0.5);
+		}
+		else {
+			this.sprite.setTint(0xFFFFFF);
+			this.sprite.setAlpha(1);
+			this.sprite.setOrigin(0.5, 0.5);
+		}
+
+		// Check if dead
+		if (!this.alive) {
+			this.deathTimer += delta/1000;
+			this.setScale(1 - this.deathTimer / DEATH_DURATION);
+			if (this.deathTimer > DEATH_DURATION) {
+				this.destroy();
+			}
+		}
 
 		// Debug
 		this.graphics.clear();
-		this.graphics.lineStyle(1, 0x00FF00, 0.5);
-		this.graphics.lineBetween(0, 0, 20*this.facing.x, 20*this.facing.y);
-		this.graphics.strokeEllipse(10*this.facing.x, 10*this.facing.y, 80, 80);
-		this.graphics.strokeEllipse(-30*this.facing.x, -30*this.facing.y, 30, 30);
+		this.headAreas.forEach((circle: Phaser.Geom.Circle) => {
+			this.graphics.lineStyle(1, 0x00FF00, 0.5);
+			this.graphics.strokeCircleShape(circle);
+		});
+		this.weakAreas.forEach((circle: Phaser.Geom.Circle) => {
+			this.graphics.lineStyle(1, 0x0000FF, 0.5);
+			this.graphics.strokeCircleShape(circle);
+		});
+	}
+
+	insideHead(egg: Egg): boolean {
+		return this.headAreas.some((circle: Phaser.Geom.Circle) => {
+			return this.checkCollision(circle, egg);
+		});
+	}
+
+	insideWeakSpot(egg: Egg): boolean {
+		return this.weakAreas.some((circle: Phaser.Geom.Circle) => {
+			return this.checkCollision(circle, egg);
+		});
+	}
+
+	checkCollision(circle: Phaser.Geom.Circle, egg: Egg): boolean {
+		let point = new Phaser.Math.Vector2(circle.x, circle.y);
+		point.rotate(this.angle * Phaser.Math.DEG_TO_RAD);
+		point.add(this);
+
+		let dist = Phaser.Math.Distance.BetweenPoints(point, egg);
+		return (dist < circle.radius && egg.canGrab());
+	}
+
+
+	damage() {
+		this.health -= 1;
+		this.hurtTimer = HURT_DURATION;
+
+		if (this.health <= 0) {
+			this.scene.createText(this.scene.CX, this.scene.CY, 25, this.scene.weights.bold, "#DDD", "DEFEATED").setOrigin(0.5);
+		}
+	}
+
+	get alive() {
+		return this.health > 0;
 	}
 }

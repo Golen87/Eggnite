@@ -56,8 +56,23 @@ export class MainScene extends BaseScene {
 		this.player2.update(time, delta);
 		this.dragon.update(time, delta);
 
-		this.eggs.forEach((egg: Egg) => {
+		this.eggs.forEach((egg: Egg, index: number) => {
+			// Hack to remove egg from list when destroyed
+			if (!egg.scene) {
+				this.eggs.splice(index, 1);
+				return;
+			}
+
 			egg.update(time, delta);
+
+			// Collision with dragon
+			if (this.dragon.insideWeakSpot(egg)) {
+				this.dragon.damage();
+				egg.onDamage(999);
+			}
+			else if (this.dragon.insideHead(egg)) {
+				egg.onDamage(999);
+			}
 		});
 	}
 
@@ -69,6 +84,11 @@ export class MainScene extends BaseScene {
 		let egg = new Egg(this, this.dragon.x, this.dragon.y);
 		egg.velocity.x = EGG_SPEED*this.dragon.facing.x;
 		egg.velocity.y = EGG_SPEED*this.dragon.facing.y;
+
+		// egg.on("dead", () => {
+			// this.eggs.splice(this.eggs.indexOf(egg), 1);
+			// egg.destroy();
+		// });
 
 		this.eggs.push(egg);
 	}

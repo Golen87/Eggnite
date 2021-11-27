@@ -2,6 +2,7 @@ import { BaseScene } from "../scenes/BaseScene";
 import { Player } from "./Player";
 
 const GRAB_COOLDOWN = 0.5; // Seconds
+const DEATH_DURATION = 2; // Seconds
 
 
 export class Egg extends Phaser.GameObjects.Container {
@@ -15,6 +16,7 @@ export class Egg extends Phaser.GameObjects.Container {
 	private health: number;
 	private isHeld: boolean;
 	private grabTimer: number; // To prevent spam-grabbing
+	private deathTimer: number; // To prevent spam-grabbing
 
 	constructor(scene: BaseScene, x: number, y: number) {
 		super(scene, x, y);
@@ -37,6 +39,7 @@ export class Egg extends Phaser.GameObjects.Container {
 		this.health = 5;
 		this.isHeld = false;
 		this.grabTimer = 0;
+		this.deathTimer = 0;
 	}
 
 	update(time: number, delta: number) {
@@ -82,8 +85,17 @@ export class Egg extends Phaser.GameObjects.Container {
 			this.grabTimer += delta/1000;
 		}
 
-		else {
-			// Death timer probably
+		// Check if dead
+		if (!this.alive) {
+			this.velocity.reset();
+			this.sprite.setFrame(2);
+			this.sprite.setAngle(0);
+
+			this.deathTimer += delta/1000;
+			this.setScale(1 - this.deathTimer / DEATH_DURATION);
+			if (this.deathTimer > DEATH_DURATION) {
+				this.destroy();
+			}
 		}
 	}
 
@@ -107,16 +119,9 @@ export class Egg extends Phaser.GameObjects.Container {
 		this.velocity.y = THROW_SPEED * player.facing.y;
 	}
 
-	onDamage() {
-		this.health -= 1;
-
-		if (!this.alive) {
-			this.velocity.reset();
-			this.sprite.setAngle(0);
-			this.sprite.setFrame(2);
-		}
+	onDamage(amount: number=1) {
+		this.health -= amount;
 	}
-
 
 	get alive() {
 		return this.health > 0;
