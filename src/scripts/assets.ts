@@ -5,12 +5,19 @@ interface Asset {
 	path: string;
 }
 
+interface SpriteSheet {
+	key: string;
+	path: string;
+	width: number;
+	height: number;
+}
 
-/* Backgrounds */
+
+/* Images */
 
 import pika from "../assets/images/pikadrawer.jpg";
 
-const backgrounds: Asset[] = [
+const images: Asset[] = [
 	{ key: "pika",		path: pika },
 ];
 
@@ -19,36 +26,18 @@ const backgrounds: Asset[] = [
 
 import player from "../assets/images/player.png";
 import egg from "../assets/images/egg.png";
+import dragon from "../assets/images/dragon.png";
 
-interface SpriteSheet {
-	key: string;
-	path: string;
-	width: number;
-	height: number;
-	frames: number;
-}
 const spritesheets: SpriteSheet[] = [
-	{ key: "player",	path: player,	width: 128/4,	height: 192/4,	frames: 4*4 },
-	{ key: "egg",		path: egg,		width: 64/2,	height: 64/2,	frames: 2*2 },
-];
-
-
-/* Icons */
-
-// import icon_reset from "../assets/icons/icon-reset.png";
-
-const icons: Asset[] = [
-	// { key: "icon-reset",				path: icon_reset },
+	{ key: "player",	path: player,	width: 128/4,	height: 192/4 },
+	{ key: "egg",		path: egg,		width: 64/2,	height: 64/2 },
+	{ key: "dragon",	path: dragon,	width: 512/4,	height: 512/4 },
 ];
 
 
 /* Export */
 
-const images: Asset[] = backgrounds.concat(icons);
-const videos: Asset[] = [];
-
 export {
 	images,
-	spritesheets,
-	videos,
+	spritesheets
 };

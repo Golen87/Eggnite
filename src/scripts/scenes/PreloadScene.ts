@@ -1,5 +1,5 @@
 import { BaseScene } from "./BaseScene";
-import { images, spritesheets, videos } from "../assets";
+import { images, spritesheets } from "../assets";
 import { GrayScalePostFilter } from "../pipelines/GrayScalePostFilter";
 import { BlurPostFilter } from "../pipelines/BlurPostFilter";
 
@@ -23,11 +23,11 @@ export class PreloadScene extends BaseScene {
 		let width = 0.5 * this.W;
 		let x = this.CX - width/2;
 		let y = this.CY;
-		let bg = this.add.rectangle(x, y, width, 4, 0x666666).setOrigin(0, 0.5);
-		let bar = this.add.rectangle(x, y, 1, 8, 0xDDDDDD).setOrigin(0, 0.5);
+		let bg = this.add.rectangle(x, y, width, 2, 0x666666).setOrigin(0, 0.5);
+		let bar = this.add.rectangle(x, y, 1, 4, 0xDDDDDD).setOrigin(0, 0.5);
 
 		// Loading text
-		let text = this.createText(x, y, 3*bar.height, this.weights.bold, "#DDD", "Loading...").setOrigin(0, 1.5);
+		let text = this.createText(x, y, 8, this.weights.bold, "#DDD", "Loading...").setOrigin(0, 1.5);
 
 		// Listener
 		this.load.on("progress", (progress) => {
@@ -43,10 +43,6 @@ export class PreloadScene extends BaseScene {
 
 		for (let image of spritesheets) {
 			this.load.spritesheet(image.key, image.path, { frameWidth: image.width, frameHeight: image.height });
-		}
-
-		for (let video of videos) {
-			this.load.video(video.key, video.path, "loadeddata", false, true);
 		}
 	}
 
