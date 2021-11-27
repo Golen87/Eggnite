@@ -12,10 +12,10 @@ export class Egg extends Phaser.GameObjects.Container {
 		this.scene = scene;
 		scene.add.existing(this);
 
-		// Create player sprite
-		const size = 32;
-		this.circle = scene.add.ellipse(0, 0, size, size, 0xFFFF00);
-		this.add(this.circle);
+
+		// Create egg sprite
+		this.sprite = scene.add.sprite(0, 0, "egg", 0);
+		this.add(this.sprite); // Attach sprite to the Egg-component
 
 		this.velocity = new Phaser.Math.Vector2(0, 0);
 	}

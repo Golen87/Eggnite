@@ -21,9 +21,8 @@ export class Player extends Phaser.GameObjects.Container {
 		scene.add.existing(this);
 
 		// Create player sprite
-		// this.sprite = scene.add.sprite(0, 0, "pika");
-		this.circle = scene.add.ellipse(0, 0, 48, 48, 0x0000FF);
-		this.add(this.circle); // Attach sprite to the Player-component
+		this.sprite = scene.add.sprite(0, 0, "player", 0);
+		this.add(this.sprite); // Attach sprite to the Player-component
 
 		// Debug graphics
 		this.graphics = scene.add.graphics();

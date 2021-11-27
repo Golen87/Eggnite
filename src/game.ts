@@ -4,8 +4,8 @@ import { MainScene } from "./scripts/scenes/MainScene";
 
 const config: Phaser.Types.Core.GameConfig = {
 	type: Phaser.WEBGL,
-	width: 640,
-	height: 360,
+	width: 320,
+	height: 180,
 	pixelArt: true,
 	scale: {
 		mode: Phaser.Scale.FIT

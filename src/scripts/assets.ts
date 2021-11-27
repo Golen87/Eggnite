@@ -17,7 +17,8 @@ const backgrounds: Asset[] = [
 
 /* Spritesheets */
 
-import x from "../assets/images/x.png";
+import player from "../assets/images/player.png";
+import egg from "../assets/images/egg.png";
 
 interface SpriteSheet {
 	key: string;
@@ -27,7 +28,8 @@ interface SpriteSheet {
 	frames: number;
 }
 const spritesheets: SpriteSheet[] = [
-	// { key: "x",		path: x,	width: 1000/10,	height: 1000/10,	frames: 10*10 },
+	{ key: "player",	path: player,	width: 128/4,	height: 192/4,	frames: 4*4 },
+	{ key: "egg",		path: egg,		width: 64/2,	height: 64/2,	frames: 2*2 },
 ];
 
 
