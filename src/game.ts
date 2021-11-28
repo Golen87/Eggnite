@@ -1,5 +1,7 @@
 import "phaser";
 import { PreloadScene } from "./scripts/scenes/PreloadScene";
+import { MenuScene } from "./scripts/scenes/MenuScene";
+import { OverworldScene } from "./scripts/scenes/OverworldScene";
 import { MainScene } from "./scripts/scenes/MainScene";
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -12,6 +14,8 @@ const config: Phaser.Types.Core.GameConfig = {
 	},
 	scene: [
 		PreloadScene,
+		MenuScene,
+		OverworldScene,
 		MainScene,
 	],
 	plugins: {

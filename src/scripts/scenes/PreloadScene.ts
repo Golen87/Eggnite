@@ -49,7 +49,7 @@ export class PreloadScene extends BaseScene {
 	create() {
 		this.fade(true, 100, 0x000000);
 		this.addEvent(110, () => {
-			this.scene.start("MainScene");
+			this.scene.start("MenuScene");
 		});
 	}
 }

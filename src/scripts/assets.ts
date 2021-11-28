@@ -16,9 +16,15 @@ interface SpriteSheet {
 /* Images */
 
 import pika from "../assets/images/pikadrawer.jpg";
+import volcano from "../assets/images/volcano.png";
+import clouds from "../assets/images/clouds.png";
+import mapplayer from "../assets/images/mapplayer.png";
 
 const images: Asset[] = [
 	{ key: "pika",		path: pika },
+	{ key: "volcano",	path: volcano },
+	{ key: "clouds",	path: clouds },
+	{ key: "mapplayer",	path: mapplayer },
 ];
 
 
