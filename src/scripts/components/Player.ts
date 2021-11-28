@@ -57,8 +57,8 @@ export class Player extends Phaser.GameObjects.Container {
 		this.border = {
 			left: 8,
 			right: scene.W-8,
-			top: 8,
-			bottom: scene.H-16,
+			top: 12,
+			bottom: scene.H-20,
 		};
 
 	}
@@ -149,6 +149,8 @@ export class Player extends Phaser.GameObjects.Container {
 
 	grab() {
 		if (this.heldEgg) {
+			this.heldEgg.x = this.x;
+			this.heldEgg.y = this.y - 5;
 			this.emit("throw");
 			this.throwTimer = THROW_DURATION;
 		}

@@ -2,7 +2,7 @@ import { BaseScene } from "../scenes/BaseScene";
 import { Player } from "./Player";
 
 const GRAB_COOLDOWN = 0.5; // Seconds
-const DEATH_DURATION = 2; // Seconds
+const DEATH_DURATION = 4; // Seconds
 
 
 export class Egg extends Phaser.GameObjects.Container {
@@ -16,13 +16,13 @@ export class Egg extends Phaser.GameObjects.Container {
 	public facing: Phaser.Math.Vector2;
 	private border: { [key: string]: number }; 
 
-	private health: number;
+	public health: number;
 	private isHeld: boolean;
 	private grabTimer: number; // To prevent spam-grabbing
 	public grabOwner: any; // To prevent spam-grabbing
 	private deathTimer: number; // To prevent spam-grabbing
 
-	constructor(scene: BaseScene, x: number, y: number, speed: number) {
+	constructor(scene: BaseScene, x: number, y: number, speed: number, level: number) {
 		super(scene, x, y);
 		this.scene = scene;
 		this.speed = speed;
@@ -30,7 +30,7 @@ export class Egg extends Phaser.GameObjects.Container {
 
 
 		// Create egg sprite
-		this.sprite = scene.add.sprite(0, 0, "egg", 0);
+		this.sprite = scene.add.sprite(0, 0, "egg", 2*level);
 		this.sprite.setOrigin(0.5, 0.7); // Center pivot, for rotation
 		this.add(this.sprite); // Attach sprite to the Egg-component
 
@@ -104,12 +104,14 @@ export class Egg extends Phaser.GameObjects.Container {
 
 		// Check if dead
 		if (!this.alive) {
-			this.velocity.reset();
-			this.sprite.setFrame(2);
-			this.sprite.setAngle(0);
+			if (this.velocity.lengthSq() > 0) {
+				this.velocity.reset();
+				this.sprite.setFrame(8);
+				this.sprite.setAngle(Math.random()*360);
+			}
 
 			this.deathTimer += delta/1000;
-			this.setScale(1 - this.deathTimer / DEATH_DURATION);
+			this.setScale(1.0 - Math.pow(this.deathTimer / DEATH_DURATION, 2));
 			if (this.deathTimer > DEATH_DURATION) {
 				this.destroy();
 			}
