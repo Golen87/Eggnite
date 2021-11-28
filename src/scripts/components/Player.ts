@@ -2,6 +2,7 @@ import { BaseScene } from "../scenes/BaseScene";
 import { Egg } from "./Egg";
 
 const GRAB_RANGE = 40;
+const THROW_DURATION = 0.3;
 
 
 export class Player extends Phaser.GameObjects.Container {
@@ -17,6 +18,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 	// Animation
 	protected walkTimer: number; // Increases while moving, modulo to set frame
+	protected throwTimer: number;
 	public heldEgg: Egg | null;
 
 	// Movement
@@ -32,10 +34,12 @@ export class Player extends Phaser.GameObjects.Container {
 
 		// Create player sprite
 		this.sprite = scene.add.sprite(0, 0, "player", 0);
+		this.sprite.setOrigin(0.5, 0.2);
 		this.add(this.sprite); // Attach sprite to the Player-component
 
 		// Animation
 		this.walkTimer = 0;
+		this.throwTimer = 0;
 		this.heldEgg = null;
 		// walk 0, 1
 		// lift 4, 5
@@ -100,13 +104,25 @@ export class Player extends Phaser.GameObjects.Container {
 
 		// Animation
 
-		// Face sprite forward
-		this.sprite.flipX = (this.facing.x < 0);
-
 		// Walking animation
 		this.walkTimer += this.velocity.length() * delta/1000 / 12;
-		const walkFrame = Math.floor(this.walkTimer) % 4;
+		let walkFrame = Math.floor(this.walkTimer) % 4;
+		if (this.inputVec.lengthSq() == 0) {
+			walkFrame = 0;
+		}
+		if (this.heldEgg) {
+			walkFrame += 4;
+		}
 		this.sprite.setFrame(walkFrame); // Walk is frame 0-1
+
+		this.throwTimer -= delta/1000;
+		if (this.throwTimer > 0) {
+			this.sprite.setFrame(8);
+		}
+		else {
+			// Face sprite forward
+			this.sprite.flipX = (this.facing.x < 0);
+		}
 
 
 		// Egg
@@ -120,12 +136,13 @@ export class Player extends Phaser.GameObjects.Container {
 		// Debug
 		this.graphics.clear();
 		this.graphics.lineStyle(1, 0x00FF00, 0.5);
-		this.graphics.lineBetween(0, 0, 20*this.facing.x, 20*this.facing.y);
-		this.graphics.strokeEllipse(0, 0, 2*GRAB_RANGE, 2*GRAB_RANGE);
+		this.graphics.lineBetween(0, 20, 20*this.facing.x, 20*this.facing.y);
+		this.graphics.strokeEllipse(0, 20, 2*GRAB_RANGE, 2*GRAB_RANGE);
 	}
 
 	canGrab(egg: Egg) {
-		let dist = Phaser.Math.Distance.BetweenPoints(this, egg);
+		let point = new Phaser.Math.Vector2(this.x, this.y+20);
+		let dist = Phaser.Math.Distance.BetweenPoints(point, egg);
 
 		return (dist < GRAB_RANGE && egg.canGrab(this));
 	}
@@ -133,9 +150,9 @@ export class Player extends Phaser.GameObjects.Container {
 	grab() {
 		if (this.heldEgg) {
 			this.emit("throw");
+			this.throwTimer = THROW_DURATION;
 		}
 		else {
-			this.sprite.setFrame(4);
 			this.emit("grab");
 		}
 
