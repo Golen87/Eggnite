@@ -106,7 +106,7 @@ export class Egg extends Phaser.GameObjects.Container {
 		if (!this.alive) {
 			if (this.velocity.lengthSq() > 0) {
 				this.velocity.reset();
-				this.sprite.setFrame(8);
+				this.sprite.setFrame(Math.random() > 0.5 ? 8 : 9);
 				this.sprite.setAngle(Math.random()*360);
 			}
 
@@ -142,7 +142,7 @@ export class Egg extends Phaser.GameObjects.Container {
 
 		let count = Math.floor(2 + 4 * Math.random());
 		if (!this.alive) {
-			count = Math.floor(4 + 4 * Math.random());
+			count += 8;
 		}
 		this.emit("shells", count);
 	}
