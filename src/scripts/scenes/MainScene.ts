@@ -6,6 +6,7 @@ import { Player1 } from "../components/Player1";
 import { Player2 } from "../components/Player2";
 import { Dragon } from "../components/Dragon";
 import { Egg } from "../components/Egg";
+import BendWaves from "../pipelines/BendWavesPostFX";
 
 
 export class MainScene extends BaseScene {
@@ -14,7 +15,7 @@ export class MainScene extends BaseScene {
 
 	lava: Phaser.GameObjects.Image;
 	ground: Phaser.GameObjects.Image;
-	myImage: Phaser.GameObjects.Image;
+	pika: Phaser.GameObjects.Image;
 	particles: Particles;
 
 	player1: Player1;
@@ -41,14 +42,15 @@ export class MainScene extends BaseScene {
 		// Adding an image
 		// https://rexrainbow.github.io/phaser3-rex-notes/docs/site/image/
 		this.lava = this.add.image(this.CX, this.CY, "lava");
-		this.myImage = this.add.image(this.CX, this.CY, "pika");
+		this.lava.setPostPipeline(BendWaves);
+		this.pika = this.add.image(this.CX, this.CY, "pika");
 		this.ground = this.add.image(this.CX, this.CY, "ground");
-		this.myImage.setTint(0xFF0000);
-		this.myImage.setBlendMode(Phaser.BlendModes.ADD);
-		this.myImage.setAlpha(0.2);
+		this.pika.setTint(0xFF0000);
+		this.pika.setBlendMode(Phaser.BlendModes.ADD);
+		this.pika.setAlpha(0);
 		this.containToScreen(this.lava);
 		this.containToScreen(this.ground);
-		this.containToScreen(this.myImage);
+		this.containToScreen(this.pika);
 
 		// Create Player-object and pass this/scene to it
 		this.player1 = new Player1(this, 0.1*this.W, this.CY);
@@ -114,6 +116,9 @@ export class MainScene extends BaseScene {
 			this.dragon.SHOOTING_TIMER = 3.0;
 			this.dragon.following = this.player1;
 
+			this.lava.resetPostPipeline();
+			this.cameras.main.setPostPipeline(BendWaves);
+
 		}
 
 		this.dragon.shootTimer = this.dragon.SHOOTING_TIMER - 2;
@@ -158,7 +163,7 @@ export class MainScene extends BaseScene {
 		this.player2.update(time, delta);
 		this.dragon.update(time, delta);
 
-		this.myImage.setAlpha(0.2 + 0.1 * Math.sin(5*time/1000));
+		this.pika.setAlpha(0.1 + 0.1 * Math.sin(4*time/1000));
 
 		this.particles.update(time, delta);
 
@@ -204,7 +209,7 @@ export class MainScene extends BaseScene {
 
 
 		// Smarter dragon
-		if (this.level >= 2 || this.dragon.mood == "angry") {
+		if (this.dragon.mood == "angry") {
 			if (this.dragon.following == this.player1) {
 				if (this.player2.heldEgg && !this.player1.heldEgg) {
 					this.dragon.following = this.player2;

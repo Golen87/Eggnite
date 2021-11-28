@@ -2,6 +2,7 @@ import { BaseScene } from "./BaseScene";
 import { images, spritesheets } from "../assets";
 import { GrayScalePostFilter } from "../pipelines/GrayScalePostFilter";
 import { BlurPostFilter } from "../pipelines/BlurPostFilter";
+import BendWaves from "../pipelines/BendWavesPostFX";
 
 
 export class PreloadScene extends BaseScene {
@@ -15,6 +16,7 @@ export class PreloadScene extends BaseScene {
 		if (renderer.pipelines) {
 			renderer.pipelines.addPostPipeline("GrayScalePostFilter", GrayScalePostFilter);
 			renderer.pipelines.addPostPipeline("BlurPostFilter", BlurPostFilter);
+			renderer.pipelines.addPostPipeline("BendWaves", BendWaves);
 		}
 	}
 
