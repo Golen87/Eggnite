@@ -5,6 +5,8 @@ export class Player2 extends Player {
 	constructor(scene: BaseScene, x: number, y: number) {
 		super(scene, x, y);
 
+		this.sprite.setTexture("player2");
+
 		this.facing.x = -1;
 
 		// Set left border for player 2
