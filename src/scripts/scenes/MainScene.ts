@@ -60,6 +60,9 @@ export class MainScene extends BaseScene {
 			// Hack to remove egg from list when destroyed
 			if (!egg.scene) {
 				this.eggs.splice(index, 1);
+				if (egg === this.dragon.following) {
+					this.dragon.following = null;
+				}
 				return;
 			}
 
@@ -91,6 +94,9 @@ export class MainScene extends BaseScene {
 		// });
 
 		this.eggs.push(egg);
+		if (this.dragon.following === null) {
+			this.dragon.following = egg;
+		}
 	}
 
 	// On player clicking the grab-key

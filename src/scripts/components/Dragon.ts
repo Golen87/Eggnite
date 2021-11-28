@@ -16,6 +16,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 	// Movement
 	public velocity: Phaser.Math.Vector2;
 	public facing: Phaser.Math.Vector2; // Used to determine throwing dir
+	public following: Egg | null = null;
 	private border: { [key: string]: number };
 
 	// Shooting
@@ -62,13 +63,17 @@ export class Dragon extends Phaser.GameObjects.Container {
 		this.deathTimer = 0;
 
 		this.headAreas = [
-			new Phaser.Geom.Circle(  0,  10, 30), // Head
-			new Phaser.Geom.Circle(  0,  45, 15), // Nose
-			new Phaser.Geom.Circle( 30, -20, 15), // Horn
-			new Phaser.Geom.Circle(-30, -20, 15), // Horn
+			new Phaser.Geom.Circle( -5,   0, 25), // Head
+			new Phaser.Geom.Circle( 35,   0, 15), // Nose
+			new Phaser.Geom.Circle(-30, -22, 10), // Left Horn Bottom
+			new Phaser.Geom.Circle(-45, -25,  5), // Left Horn Mid
+			new Phaser.Geom.Circle(-55, -20,  5), // Left Horn Top
+			new Phaser.Geom.Circle(-30,  22, 10), // Right Horn Bottom
+			new Phaser.Geom.Circle(-45,  25,  5), // Right Horn Mid
+			new Phaser.Geom.Circle(-55,  20,  5), // Right Horn Bottom
 		];
 		this.weakAreas = [
-			new Phaser.Geom.Circle(0, -20, 20), // Back of head
+			new Phaser.Geom.Circle(-25, 0, 10), // Back of head
 		];
 	}
 
@@ -101,11 +106,25 @@ export class Dragon extends Phaser.GameObjects.Container {
 		*/
 
 		// Simple rotation test
-		this.facing.rotate(-0.3*Math.PI * delta/1000);
+		//this.facing.rotate(-0.3*Math.PI * delta/1000);
+
+		let target = new Phaser.Math.Vector2();
+		if (this.following) {
+			target.add(this.following);
+			target.subtract(this);
+		}
+		target.normalize();
+		target.scale(0.01);
+
+		this.facing.add(target)
+		this.facing.normalize()
 
 		// Set direction
-		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG - 90);
-		// this.angle -= 1;
+		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG);
+
+		// Set direction
+		//this.setAngle(target.angle() * Phaser.Math.RAD_TO_DEG - 90);
+		//this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG - 90);
 
 
 		// Shooting eggs
