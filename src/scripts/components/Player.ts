@@ -10,6 +10,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 	// Input
 	protected keys: any;
+	protected isTouched: boolean;
 
 	// Graphics
 	protected circle: Phaser.GameObjects.Ellipse;
@@ -23,6 +24,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 	// Movement
 	protected inputVec: Phaser.Math.Vector2; // Just used for keyboard -> vector
+	protected touchPos: Phaser.Math.Vector2;
 	public velocity: Phaser.Math.Vector2;
 	public facing: Phaser.Math.Vector2; // Used to determine throwing dir
 	protected border: { [key: string]: number }; 
@@ -38,6 +40,7 @@ export class Player extends Phaser.GameObjects.Container {
 		this.add(this.sprite); // Attach sprite to the Player-component
 
 		// Animation
+		this.isTouched = false;
 		this.walkTimer = 0;
 		this.throwTimer = 0;
 		this.heldEgg = null;
@@ -52,6 +55,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 		// Movement
 		this.inputVec = new Phaser.Math.Vector2(0, 0);
+		this.touchPos = new Phaser.Math.Vector2(0, 0);
 		this.velocity = new Phaser.Math.Vector2(0, 0);
 		this.facing = new Phaser.Math.Vector2(1, 0);
 		this.border = {
@@ -66,14 +70,26 @@ export class Player extends Phaser.GameObjects.Container {
 	update(time: number, delta: number) {
 
 		// Keyboard input to vector
-		this.inputVec.reset();
-		this.inputVec.x = (this.keys.left.isDown ? -1 : 0) + (this.keys.right.isDown ? 1 : 0);
-		this.inputVec.y = (this.keys.up.isDown ? -1 : 0) + (this.keys.down.isDown ? 1 : 0);
+		if (!this.isTouched) {
+			this.inputVec.reset();
+			this.inputVec.x = (this.keys.left.isDown ? -1 : 0) + (this.keys.right.isDown ? 1 : 0);
+			this.inputVec.y = (this.keys.up.isDown ? -1 : 0) + (this.keys.down.isDown ? 1 : 0);
+		}
+		// Touch to input vector
+		else {
+			this.inputVec.copy(this.touchPos);
+			this.inputVec.x -= this.x;
+			this.inputVec.y -= this.y;
+			if (this.inputVec.length() < 8) {
+				this.inputVec.reset();
+			}
+		}
 
 		// Movement
 		const ACCELERATION = 30;
 		const MAX_SPEED = 100;
 
+		this.inputVec.normalize();
 		this.inputVec.scale(ACCELERATION);
 		this.velocity.scale(0.85); // Friction
 		this.velocity.add(this.inputVec);
@@ -159,5 +175,21 @@ export class Player extends Phaser.GameObjects.Container {
 		}
 
 		// Emitted events are catched in MainScene with "player.on"
+	}
+
+
+	touchStart(x: number, y: number) {
+		this.isTouched = true;
+		this.emit("grab");
+	}
+
+	touchDrag(x: number, y: number) {
+		this.touchPos.x = x;
+		this.touchPos.y = y;
+	}
+
+	touchEnd(x: number, y: number) {
+		this.isTouched = false;
+		this.emit("throw");
 	}
 }

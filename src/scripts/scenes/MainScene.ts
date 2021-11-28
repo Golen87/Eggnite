@@ -104,6 +104,36 @@ export class MainScene extends BaseScene {
 
 		this.dragon.shootTimer = this.dragon.SHOOTING_TIMER - 2;
 
+
+		// Touch controls
+
+		this.input.addPointer(2);
+
+		let leftArea = this.add.rectangle(0, 0, 0.4*this.W, this.H, 0xFFFFFF).setOrigin(0).setAlpha(0.001);
+		leftArea.setInteractive({ useHandCursor: true, draggable: true });
+		leftArea.on('dragstart', (pointer: Phaser.Input.Pointer) => {
+			this.player1.touchStart(pointer.x, pointer.y);
+		});
+		leftArea.on('drag', (pointer: Phaser.Input.Pointer) => {
+			this.player1.touchDrag(pointer.x, pointer.y);
+		});
+		leftArea.on('dragend', (pointer: Phaser.Input.Pointer) => {
+			this.player1.touchEnd(pointer.x, pointer.y);
+		});
+
+		let rightArea = this.add.rectangle(this.W, 0, 0.4*this.W, this.H, 0xFFFFFF).setOrigin(1,0).setAlpha(0.001);
+		rightArea.setInteractive({ useHandCursor: true, draggable: true });
+		rightArea.on('dragstart', (pointer: Phaser.Input.Pointer) => {
+			this.player2.touchStart(pointer.x, pointer.y);
+		});
+		rightArea.on('drag', (pointer: Phaser.Input.Pointer) => {
+			this.player2.touchDrag(pointer.x, pointer.y);
+		});
+		rightArea.on('dragend', (pointer: Phaser.Input.Pointer) => {
+			this.player2.touchEnd(pointer.x, pointer.y);
+		});
+
+		// Skip
 		this.input.keyboard.on("keydown-ESC", () => {
 			this.scene.start("OverworldScene", { level: this.level+1 });
 		}, this);
