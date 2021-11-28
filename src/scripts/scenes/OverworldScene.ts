@@ -49,15 +49,15 @@ export class OverworldScene extends BaseScene {
 		this.player.setDepth(10);
 
 		this.graphics = this.add.graphics();
-		this.graphics.setBlendMode(Phaser.BlendModes.ADD);
-		this.graphics.lineStyle(1, 0xFFFFFF, 0.6);
-		this.graphics.fillStyle(0xFFFFFF, 0.6);
+		// this.graphics.setBlendMode(Phaser.BlendModes.ADD);
+		this.graphics.lineStyle(1, 0xEEEEDD, 1.0);
+		this.graphics.fillStyle(0xEEEEDD, 1.0);
 
 		this.flags = [];
 
 
 		let levels = [
-			{ x:2*74, y:2*78 },
+			{ x:2*74, y:2*77 },
 			{ x:2*37, y:2*60 },
 			{ x:2*101, y:2*45 },
 			{ x:2*73, y:2*21 },
@@ -69,7 +69,8 @@ export class OverworldScene extends BaseScene {
 			this.points[index] = [];
 
 			// Large level dot
-			this.points[index].push({ x: point.x, y: point.y, radius: 5 });
+			if (this.level > 0)
+				this.points[index].push({ x: point.x, y: point.y, radius: 5 });
 
 			// Smaller path dots
 			if (index > 0) {
@@ -110,7 +111,7 @@ export class OverworldScene extends BaseScene {
 		}
 		else {
 			this.player.x = levels[this.level].x;
-			this.player.y = levels[this.level].y + 30;
+			this.player.y = levels[this.level].y + 40;
 		}
 
 		// Instantly draw
@@ -159,9 +160,9 @@ export class OverworldScene extends BaseScene {
 				// Animate player
 				let tween = this.tweens.add({
 					targets: this.player,
-					y: "-=30",
+					y: "-=40",
 					duration: 1000,
-					delay: wait + 1000,
+					delay: wait + 500,
 				});
 				tween.on('complete', this.progress, this);
 			}
