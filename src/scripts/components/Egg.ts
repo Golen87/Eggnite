@@ -7,11 +7,14 @@ const DEATH_DURATION = 2; // Seconds
 
 export class Egg extends Phaser.GameObjects.Container {
 	public scene: BaseScene;
+	public speed: number;
 
 	private sprite: Phaser.GameObjects.Sprite;
 
 	public velocity: Phaser.Math.Vector2;
+	public boost: number;
 	public facing: Phaser.Math.Vector2;
+	private border: { [key: string]: number }; 
 
 	private health: number;
 	private isHeld: boolean;
@@ -19,9 +22,10 @@ export class Egg extends Phaser.GameObjects.Container {
 	public grabOwner: any; // To prevent spam-grabbing
 	private deathTimer: number; // To prevent spam-grabbing
 
-	constructor(scene: BaseScene, x: number, y: number) {
+	constructor(scene: BaseScene, x: number, y: number, speed: number) {
 		super(scene, x, y);
 		this.scene = scene;
+		this.speed = speed;
 		scene.add.existing(this);
 
 
@@ -36,12 +40,20 @@ export class Egg extends Phaser.GameObjects.Container {
 
 		this.velocity = new Phaser.Math.Vector2(0, 0);
 		this.facing = new Phaser.Math.Vector2(0, 0);
+		this.boost = 1;
 
 		this.health = 5;
 		this.isHeld = false;
 		this.grabTimer = 0;
 		this.grabOwner = null;
 		this.deathTimer = 0;
+
+		this.border = {
+			left: 8,
+			right: scene.W-8,
+			top: 8,
+			bottom: scene.H-8,
+		};
 	}
 
 	update(time: number, delta: number) {
@@ -49,27 +61,30 @@ export class Egg extends Phaser.GameObjects.Container {
 
 			if (!this.isHeld) {
 				// Movement
-				this.x += this.velocity.x * delta/1000;
-				this.y += this.velocity.y * delta/1000;
+				let speed = this.velocity.clone();
+				speed.scale(1 + 0.7 * this.boost);
+				this.x += speed.x * delta/1000;
+				this.y += speed.y * delta/1000;
+				this.boost *= 0.95;
 
 				// Border collision
-				if (this.x < 0 && this.velocity.x < 0) {
-					this.x = 0;
+				if (this.x < this.border.left && this.velocity.x < 0) {
+					this.x = this.border.left;
 					this.velocity.x *= -1;
 					this.onDamage();
 				}
-				if (this.x > this.scene.W && this.velocity.x > 0) {
-					this.x = this.scene.W;
+				if (this.x > this.border.right && this.velocity.x > 0) {
+					this.x = this.border.right;
 					this.velocity.x *= -1;
 					this.onDamage();
 				}
-				if (this.y < 0 && this.velocity.y < 0) {
-					this.y = 0;
+				if (this.y < this.border.top && this.velocity.y < 0) {
+					this.y = this.border.top;
 					this.velocity.y *= -1;
 					this.onDamage();
 				}
-				if (this.y > this.scene.H && this.velocity.y > 0) {
-					this.y = this.scene.H;
+				if (this.y > this.border.bottom && this.velocity.y > 0) {
+					this.y = this.border.bottom;
 					this.velocity.y *= -1;
 					this.onDamage();
 				}
@@ -113,12 +128,11 @@ export class Egg extends Phaser.GameObjects.Container {
 	}
 
 	onThrow(player: Player) {
-		const THROW_SPEED = 200;
-
 		this.isHeld = false;
 		this.grabTimer = 0;
-		this.velocity.x = THROW_SPEED * player.facing.x;
-		this.velocity.y = THROW_SPEED * player.facing.y;
+		this.boost = 1;
+		this.velocity.x = 1.25 * this.speed * player.facing.x;
+		this.velocity.y = 1.25 * this.speed * player.facing.y;
 	}
 
 	onDamage(amount: number=1) {
