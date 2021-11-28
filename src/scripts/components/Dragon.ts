@@ -2,17 +2,19 @@ import { BaseScene } from "../scenes/BaseScene";
 import { Egg } from "./Egg";
 import { interpolateColor } from "../utils";
 
-const HURT_DURATION = 0.5;
+const HURT_DURATION = 0.7;
 const DEATH_DURATION = 3; // Seconds
 const ANGRY_DURATION = 12; // Seconds
 
 
 export class Dragon extends Phaser.GameObjects.Container {
 	public scene: BaseScene;
+	public level: number;
 
 	// Graphics
 	private sprite: Phaser.GameObjects.Sprite;
 	private gem: Phaser.GameObjects.Sprite;
+	private light: Phaser.GameObjects.PointLight;
 	private graphics: Phaser.GameObjects.Graphics;
 
 	// Movement
@@ -25,31 +27,39 @@ export class Dragon extends Phaser.GameObjects.Container {
 	public SHOOTING_TIMER: number;
 	public shootTimer: number;
 	public health: number;
+	public sustained: number; // Just used for animation
 	private hurtTimer: number;
 	private deathTimer: number;
 
 	public mood: string;
 	public moodTimer: number;
+	public moveTimer: number;
 
 	// Collision
 	private headAreas: Phaser.Geom.Circle[];
 	private weakAreas: Phaser.Geom.Circle[];
 
+	private goalPoints: Phaser.Math.Vector2[];
+
 	constructor(scene: BaseScene, x: number, y: number, level: number) {
 		super(scene, x, y);
 		this.scene = scene;
+		this.level = level;
 		scene.add.existing(this);
 
-		const frame = 2*level;
 
 		// Create player sprite
 		const size = 80;
-		this.sprite = scene.add.sprite(0, 0, "dragon", frame);
+		this.sprite = scene.add.sprite(0, 0, "dragon", 2*level);
 		this.add(this.sprite); // Attach sprite to the Player-component
 
-		this.gem = scene.add.sprite(0, 0, "gem", frame);
+		this.gem = scene.add.sprite(0, 0, "gem", 2*level);
 		// this.gem.setBlendMode(Phaser.BlendModes.SCREEN);
 		this.add(this.gem); // Attach sprite to the Player-component
+
+		const colors = [0xde7c70, 0x63c446, 0x8987ff, 0xe070b2];
+		this.light = scene.add.pointlight(-28, 0, colors[level], 30, 1.0, 0.05);
+		this.add(this.light);
 
 		// Animation
 		// idle 0
@@ -73,25 +83,37 @@ export class Dragon extends Phaser.GameObjects.Container {
 		this.SHOOTING_TIMER = 0;
 		this.shootTimer = 0;
 		this.health = 5;
+		this.sustained = 0;
 		this.hurtTimer = 0;
 		this.deathTimer = 0;
 
 		this.mood = "normal";
 		this.moodTimer = 0;
+		this.moveTimer = 8;
 
 		this.headAreas = [
 			new Phaser.Geom.Circle( -5,   0, 25), // Head
 			new Phaser.Geom.Circle( 35,   0, 15), // Nose
 			new Phaser.Geom.Circle(-30, -22, 10), // Left Horn Bottom
 			new Phaser.Geom.Circle(-45, -25,  5), // Left Horn Mid
-			new Phaser.Geom.Circle(-55, -20,  5), // Left Horn Top
+			// new Phaser.Geom.Circle(-55, -20,  5), // Left Horn Top
 			new Phaser.Geom.Circle(-30,  22, 10), // Right Horn Bottom
 			new Phaser.Geom.Circle(-45,  25,  5), // Right Horn Mid
-			new Phaser.Geom.Circle(-55,  20,  5), // Right Horn Bottom
+			// new Phaser.Geom.Circle(-55,  20,  5), // Right Horn Bottom
 		];
 		this.weakAreas = [
-			new Phaser.Geom.Circle(-25, 0, 20), // Back of head
+			new Phaser.Geom.Circle(-30, 0, 15), // Back of head
 		];
+
+		const k = 35;
+		this.goalPoints = [];
+		for (let i=-1; i<2; i++) {
+			for (let j=-1; j<2; j++) {
+				this.goalPoints.push(
+					new Phaser.Math.Vector2(this.x + i*k, this.y + j*k)
+				);
+			}
+		}
 	}
 
 	update(time: number, delta: number) {
@@ -160,17 +182,22 @@ export class Dragon extends Phaser.GameObjects.Container {
 			const k = 0.8;
 			let squish = 1;
 			if (this.SHOOTING_TIMER - this.shootTimer < 1.0) {
+				this.sprite.setFrame(2*this.level + 1);
 				squish = k + (1-k) * (this.SHOOTING_TIMER - this.shootTimer);
 			}
-			this.sprite.scaleX = squish;
-			this.gem.scaleX = squish;
+			else {
+				this.sprite.setFrame(2*this.level);
+			}
+			this.scaleX = squish;
 
 
 			// AI State
 
 			this.moodTimer -= delta/1000; // Set on mood change
+			this.light.intensity = 1.0;
 
 			if (this.mood == "angry") {
+				this.light.intensity = 1.5;
 
 				if (this.moodTimer <= 0) {
 					this.mood = "normal";
@@ -178,6 +205,22 @@ export class Dragon extends Phaser.GameObjects.Container {
 
 			}
 
+
+			this.moveTimer -= delta/1000;
+			if (this.moveTimer <= 0) {
+				this.moveTimer = 4 + 8 * Math.random();
+
+				let goal = Phaser.Math.RND.pick(this.goalPoints);
+				// goal.copy(this.goal);
+
+				this.scene.tweens.add({
+					targets: this,
+					x: { from: this.x, to: goal.x },
+					y: { from: this.y, to: goal.y },
+					ease: 'Cubic.InOut',
+					duration: 3000 + 1000 * (this.moveTimer-3) * Math.random()
+				});
+			}
 		}
 
 		// Hurt animation
@@ -185,14 +228,14 @@ export class Dragon extends Phaser.GameObjects.Container {
 		if (this.hurtTimer > 0 || !this.alive) {
 			let blink = (Math.sin(50*time/1000) > 0);
 			this.sprite.setTint(blink ? 0xFF0000 : 0xFFFFFF);
-			this.sprite.setAlpha(0.75);
-			this.sprite.setOrigin(0.5 + 0.02 * Math.sin(35*time/1000), 0.5);
 			this.gem.setTint(blink ? 0xFFFFFF : 0xFF0000);
+			this.sprite.setAlpha(0.75);
 			this.gem.setAlpha(0.75);
-			this.gem.setOrigin(0.5 + 0.02 * Math.sin(35*time/1000), 0.5);
+			this.sprite.setOrigin(0.5, 0.5 + 0.02 * Math.sin(35*time/1000));
+			this.gem.setOrigin(0.5, 0.5 + 0.02 * Math.sin(35*time/1000));
 		}
 		else {
-			this.sprite.setTint(0xFFFFFF);
+			this.sprite.setTint(this.mood == "normal" ? 0xFFFFFF : 0xFFCCCC);
 			this.sprite.setAlpha(1);
 			this.sprite.setOrigin(0.5, 0.5);
 
@@ -201,6 +244,8 @@ export class Dragon extends Phaser.GameObjects.Container {
 			// this.gem.setScale(1.0 + 0.05 * k);
 			this.gem.setAlpha(1.0 + 0.4*k);
 			this.gem.setOrigin(0.5, 0.5);
+
+			this.light.setVisible(Math.random() < 1.0 - 0.02 * this.sustained);
 
 			if (this.mood == "angry") {
 				this.sprite.setOrigin(0.5, 0.5 + 0.005 * Math.sin(35*time/1000));
@@ -212,6 +257,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 		if (!this.alive) {
 			this.deathTimer += delta/1000;
 			this.gem.setVisible(false);
+			this.light.setVisible(false);
 			this.setScale(1 - 0.5 * this.deathTimer / DEATH_DURATION);
 			this.setAlpha(1 - this.deathTimer / DEATH_DURATION);
 			if (this.deathTimer > DEATH_DURATION) {
@@ -255,6 +301,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 
 	damage() {
 		this.health -= 1;
+		this.sustained += 1;
 		this.hurtTimer = HURT_DURATION;
 
 		this.mood = "angry";
