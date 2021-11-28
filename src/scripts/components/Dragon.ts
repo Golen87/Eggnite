@@ -187,7 +187,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 		point.add(this);
 
 		let dist = Phaser.Math.Distance.BetweenPoints(point, egg);
-		return (dist < circle.radius && egg.canGrab());
+		return (dist < circle.radius && egg.canGrab(this));
 	}
 
 

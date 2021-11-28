@@ -85,6 +85,7 @@ export class MainScene extends BaseScene {
 		const EGG_SPEED = 150;
 
 		let egg = new Egg(this, this.dragon.x, this.dragon.y);
+		egg.grabOwner = this.dragon;
 		egg.velocity.x = EGG_SPEED*this.dragon.facing.x;
 		egg.velocity.y = EGG_SPEED*this.dragon.facing.y;
 
@@ -105,6 +106,7 @@ export class MainScene extends BaseScene {
 			// Checks proximity
 			if (player.canGrab(egg)) {
 				player.heldEgg = egg;
+				egg.grabOwner = player;
 				egg.onGrab(player);
 				break;
 			}

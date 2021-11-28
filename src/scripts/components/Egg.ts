@@ -16,6 +16,7 @@ export class Egg extends Phaser.GameObjects.Container {
 	private health: number;
 	private isHeld: boolean;
 	private grabTimer: number; // To prevent spam-grabbing
+	public grabOwner: any; // To prevent spam-grabbing
 	private deathTimer: number; // To prevent spam-grabbing
 
 	constructor(scene: BaseScene, x: number, y: number) {
@@ -39,6 +40,7 @@ export class Egg extends Phaser.GameObjects.Container {
 		this.health = 5;
 		this.isHeld = false;
 		this.grabTimer = 0;
+		this.grabOwner = null;
 		this.deathTimer = 0;
 	}
 
@@ -99,8 +101,8 @@ export class Egg extends Phaser.GameObjects.Container {
 		}
 	}
 
-	canGrab() {
-		return (this.health > 0 && this.grabTimer > GRAB_COOLDOWN);
+	canGrab(requester: any) {
+		return (this.health > 0 && (this.grabTimer > GRAB_COOLDOWN || requester != this.grabOwner));
 	}
 
 	onGrab(player: Player) {

@@ -126,7 +126,7 @@ export class Player extends Phaser.GameObjects.Container {
 	canGrab(egg: Egg) {
 		let dist = Phaser.Math.Distance.BetweenPoints(this, egg);
 
-		return (dist < GRAB_RANGE && egg.canGrab());
+		return (dist < GRAB_RANGE && egg.canGrab(this));
 	}
 
 	grab() {
