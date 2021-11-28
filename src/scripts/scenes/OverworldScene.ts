@@ -19,6 +19,7 @@ export class OverworldScene extends BaseScene {
 	points: any;
 	curves: any;
 	graphics: Phaser.GameObjects.Graphics;
+	victory: Phaser.GameObjects.Text;
 	timer: number;
 
 	constructor() {
@@ -127,6 +128,11 @@ export class OverworldScene extends BaseScene {
 
 		// Animate
 		this.addEvent((this.level == 0) ? 2000 : 1000, () => {
+			if (this.level > 3) {
+				this.victory = this.createText(this.CX, this.CY, 60, this.weights.bold, "#F00", "VICTORY").setOrigin(0.5).setStroke("#FF0", 6);
+				return;
+			}
+
 			this.points[this.level].forEach((point: any, index: number) => {
 				this.addEvent(200*index, () => {
 					this.graphics.fillCircle(point.x, point.y, point.radius);
@@ -178,6 +184,9 @@ export class OverworldScene extends BaseScene {
 
 		this.player.flipX = anim;
 
+		if (this.victory) {
+			this.victory.setScale(1.0 + 0.1*Math.sin(5*time/1000));
+		}
 		// this.flags.forEach(flag => {
 			// flag.setFrame(anim ? 0 : 1);
 		// });
@@ -187,7 +196,7 @@ export class OverworldScene extends BaseScene {
 		this.addEvent(1000, () => {
 			this.fade(true, 500, 0x000000);
 			this.addEvent(550, () => {
-				this.scene.start("MainScene");
+				this.scene.start("MainScene", { level: this.level });
 			});
 		});
 	}
