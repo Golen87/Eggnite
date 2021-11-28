@@ -12,6 +12,7 @@ export class MainScene extends BaseScene {
 	level: number;
 	isRunning: boolean;
 
+	ground: Phaser.GameObjects.Image;
 	myImage: Phaser.GameObjects.Image;
 	particles: Particles;
 
@@ -39,7 +40,9 @@ export class MainScene extends BaseScene {
 		// Adding an image
 		// https://rexrainbow.github.io/phaser3-rex-notes/docs/site/image/
 		this.myImage = this.add.image(this.CX, this.CY, "pika");
+		this.ground = this.add.image(this.CX, this.CY, "ground");
 		this.myImage.setTint(0xFF0000);
+		this.containToScreen(this.ground);
 		this.containToScreen(this.myImage);
 
 		// Create Player-object and pass this/scene to it
