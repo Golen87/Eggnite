@@ -1,5 +1,6 @@
 import { BaseScene } from "./BaseScene";
 import { RoundRectangle } from "../components/RoundRectangle";
+import { Particles } from "../components/Particles";
 import { Player } from "../components/Player";
 import { Player1 } from "../components/Player1";
 import { Player2 } from "../components/Player2";
@@ -12,6 +13,7 @@ export class MainScene extends BaseScene {
 	isRunning: boolean;
 
 	myImage: Phaser.GameObjects.Image;
+	particles: Particles;
 
 	player1: Player1;
 	player2: Player2;
@@ -48,6 +50,10 @@ export class MainScene extends BaseScene {
 		this.dragon.setDepth(10);
 
 		this.eggs = [];
+
+
+		this.particles = new Particles(this);
+		this.particles.setDepth(20);
 
 
 		// Instructions
@@ -144,6 +150,8 @@ export class MainScene extends BaseScene {
 		this.player2.update(time, delta);
 		this.dragon.update(time, delta);
 
+		this.particles.update(time, delta);
+
 		this.eggs.forEach((egg: Egg, index: number) => {
 			// Hack to remove egg from list when destroyed
 			if (!egg.scene) {
@@ -204,13 +212,13 @@ export class MainScene extends BaseScene {
 		egg.velocity.x = this.EGG_SPEED*this.dragon.facing.x;
 		egg.velocity.y = this.EGG_SPEED*this.dragon.facing.y;
 
-		// egg.on("dead", () => {
-			// this.eggs.splice(this.eggs.indexOf(egg), 1);
-			// egg.destroy();
-		// });
+		egg.on("shells", (amount: number) => {
+			const color = [0x699efc, 0xde7c70, 0xbdc3c7, 0xffbf00][this.level];
+			this.particles.createShells(egg.x, egg.y, amount, color);
+		});
 
 		this.eggs.push(egg);
-		if (this.dragon.following === null) {
+		if (this.dragon.following === null || this.dragon.following.scene === null) {
 			this.dragon.following = egg;
 		}
 	}

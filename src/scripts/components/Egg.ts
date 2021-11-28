@@ -139,6 +139,12 @@ export class Egg extends Phaser.GameObjects.Container {
 
 	onDamage(amount: number=1) {
 		this.health -= amount;
+
+		let count = Math.floor(2 + 4 * Math.random());
+		if (!this.alive) {
+			count = Math.floor(4 + 4 * Math.random());
+		}
+		this.emit("shells", count);
 	}
 
 	get alive() {
