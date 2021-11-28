@@ -1,6 +1,6 @@
 import { BaseScene } from "../scenes/BaseScene";
 
-class Particle extends Phaser.GameObjects.Image {
+class Particle extends Phaser.GameObjects.Sprite {
 	private myType: string;
 	private pos: Phaser.Math.Vector2;
 	private vel: Phaser.Math.Vector2;
@@ -63,6 +63,14 @@ class Particle extends Phaser.GameObjects.Image {
 		this.lifeTime = 1.5 + 1*Math.random();
 	}
 
+	lava(x: number, y: number) {
+		this.init(x, y, "lavabubble");
+
+		this.setFrame(0);
+
+		this.lifeTime = 0.3 + 0.5*Math.random();
+	}
+
 
 	update(time: number, delta: number) {
 		if (this.myType == "shell") {
@@ -77,6 +85,11 @@ class Particle extends Phaser.GameObjects.Image {
 			else {
 				this.offset.y = - 10 * Math.sin(this.life/k * Math.PI) + 5 * this.life/k;
 			}
+		}
+
+		if (this.myType == "lavabubble") {
+			let frame = Math.floor(7 * (this.life / this.lifeTime));
+			this.setFrame(frame);
 		}
 
 
@@ -152,6 +165,12 @@ export class Particles extends Phaser.GameObjects.Container {
 	createShells(x: number, y: number, amount: number, tint: number) {
 		this.getFreeParticles(amount).forEach((particle) => {
 			particle.shell(x, y, tint);
+		});
+	}
+
+	createLava(x: number, y: number) {
+		this.getFreeParticles(1).forEach((particle) => {
+			particle.lava(x, y);
 		});
 	}
 }

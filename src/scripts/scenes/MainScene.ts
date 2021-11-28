@@ -56,7 +56,7 @@ export class MainScene extends BaseScene {
 
 
 		this.particles = new Particles(this);
-		this.particles.setDepth(20);
+		this.particles.setDepth(9);
 
 
 		// Instructions
@@ -154,6 +154,14 @@ export class MainScene extends BaseScene {
 		this.dragon.update(time, delta);
 
 		this.particles.update(time, delta);
+
+		if (Math.random() < 0.1) {
+			const k = 0.23;
+			this.particles.createLava(
+				this.W * (k + (1-2*k) * Math.random()),
+				this.H * Math.random()
+			);
+		}
 
 		this.eggs.forEach((egg: Egg, index: number) => {
 			// Hack to remove egg from list when destroyed

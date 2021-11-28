@@ -37,6 +37,7 @@ import dragon from "../assets/images/dragon.png";
 import gem from "../assets/images/gem.png";
 import mapplayer from "../assets/images/mapplayer.png";
 import shell from "../assets/images/shell.png";
+import lavabubble from "../assets/images/lava_bubble.png";
 
 const spritesheets: SpriteSheet[] = [
 	{ key: "player",	path: player,		width: 128/4,	height: 192/4 },
@@ -46,6 +47,7 @@ const spritesheets: SpriteSheet[] = [
 	{ key: "gem",		path: gem,			width: 256/2,	height: 512/4 },
 	{ key: "mapplayer",	path: mapplayer,	width: 32/2,	height: 16/1 },
 	{ key: "shell",		path: shell,		width: 64/4,	height: 16/1 },
+	{ key: "lavabubble",path: lavabubble,	width: 16,		height: 16 },
 ];
 
 
