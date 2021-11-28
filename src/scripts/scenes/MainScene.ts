@@ -8,6 +8,8 @@ import { Egg } from "../components/Egg";
 
 
 export class MainScene extends BaseScene {
+	level: number;
+
 	myImage: Phaser.GameObjects.Image;
 
 	player1: Player1;
@@ -15,9 +17,15 @@ export class MainScene extends BaseScene {
 	dragon: Dragon;
 	eggs: Egg[];
 
+	public EGG_SPEED: number;
+
 
 	constructor() {
 		super({key: "MainScene"});
+	}
+
+	init(data): void {
+		this.level = data.level;
 	}
 
 	create(): void {
@@ -34,6 +42,7 @@ export class MainScene extends BaseScene {
 		this.player2 = new Player2(this, 0.9*this.W, this.CY);
 
 		this.dragon = new Dragon(this, this.CX, this.CY);
+		this.dragon.setDepth(10);
 
 		this.eggs = [];
 
@@ -49,6 +58,39 @@ export class MainScene extends BaseScene {
 		this.player1.on("throw", this.onThrow.bind(this, this.player1));
 		this.player2.on("throw", this.onThrow.bind(this, this.player2));
 		this.dragon.on("shoot", this.onShootEgg.bind(this));
+
+
+		// Level settings
+
+		if (this.level == 0) {
+
+			this.dragon.health = 2;
+			this.EGG_SPEED = 100;
+			this.dragon.following = this.player2;
+
+		}
+		else if (this.level == 1) {
+
+			this.dragon.health = 3;
+			this.EGG_SPEED = 140;
+			this.dragon.following = this.player1;
+
+		}
+		else if (this.level == 2) {
+
+			this.dragon.health = 4;
+			this.EGG_SPEED = 180;
+			this.dragon.following = this.player2;
+
+		}
+		else if (this.level == 3) {
+
+			this.dragon.health = 5;
+			this.EGG_SPEED = 220;
+			this.dragon.following = this.player1;
+
+		}
+
 	}
 
 	update(time: number, delta: number) {
@@ -61,7 +103,14 @@ export class MainScene extends BaseScene {
 			if (!egg.scene) {
 				this.eggs.splice(index, 1);
 				if (egg === this.dragon.following) {
-					this.dragon.following = null;
+
+					// Follow nearest player
+					if (this.dragon.facing.x < 0) {
+						this.dragon.following = this.player1;
+					}
+					else {
+						this.dragon.following = this.player2;
+					}
 				}
 				return;
 			}
@@ -71,23 +120,29 @@ export class MainScene extends BaseScene {
 			// Collision with dragon
 			if (this.dragon.insideWeakSpot(egg)) {
 				this.dragon.damage();
+				this.dragon.following = egg.grabOwner; // Enraged
 				egg.onDamage(999);
 			}
 			else if (this.dragon.insideHead(egg)) {
 				egg.onDamage(999);
 			}
 		});
+
+		// Check if destroyed
+		if (!this.dragon.scene) {
+			this.progress();
+		}
 	}
 
 
 	// On dragon egg-timer
 	onShootEgg() {
-		const EGG_SPEED = 150;
-
-		let egg = new Egg(this, this.dragon.x, this.dragon.y);
+		let x = this.dragon.x + 30 * this.dragon.facing.x;
+		let y = this.dragon.y + 30 * this.dragon.facing.y;
+		let egg = new Egg(this, x, y, this.EGG_SPEED);
 		egg.grabOwner = this.dragon;
-		egg.velocity.x = EGG_SPEED*this.dragon.facing.x;
-		egg.velocity.y = EGG_SPEED*this.dragon.facing.y;
+		egg.velocity.x = this.EGG_SPEED*this.dragon.facing.x;
+		egg.velocity.y = this.EGG_SPEED*this.dragon.facing.y;
 
 		// egg.on("dead", () => {
 			// this.eggs.splice(this.eggs.indexOf(egg), 1);
@@ -108,7 +163,11 @@ export class MainScene extends BaseScene {
 				player.heldEgg = egg;
 				egg.grabOwner = player;
 				egg.onGrab(player);
-				break;
+
+				if (this.dragon.following == egg && this.dragon.mood == "normal") {
+					this.dragon.following = player;
+				}
+				return;
 			}
 		}
 	}
@@ -117,7 +176,20 @@ export class MainScene extends BaseScene {
 	onThrow(player: Player) {
 		if (player.heldEgg) {
 			player.heldEgg.onThrow(player);
+
+			if (this.dragon.following == player && this.dragon.mood == "angry") {
+				this.dragon.following = player.heldEgg;
+			}
 			player.heldEgg = null;
 		}
+	}
+
+	progress() {
+		this.addEvent(100, () => {
+			this.fade(true, 500, 0x000000);
+			this.addEvent(550, () => {
+				this.scene.start("OverworldScene", { level: this.level+1 });
+			});
+		});
 	}
 }
