@@ -19,6 +19,7 @@ export class MainScene extends BaseScene {
 	eggs: Egg[];
 
 	public EGG_SPEED: number;
+	public EGG_HEALTH: number;
 
 
 	constructor() {
@@ -51,7 +52,7 @@ export class MainScene extends BaseScene {
 
 		// Instructions
 		this.createText(0, 0, 12, this.weights.regular, "#DDD", "WASD+F");
-		this.createText(this.W, 0, 12, this.weights.regular, "#DDD", "Arrow+minus").setOrigin(1,0);
+		this.createText(this.W, 0, 12, this.weights.regular, "#DDD", "Arrow+L").setOrigin(1,0);
 
 
 		// Callbacks
@@ -69,6 +70,7 @@ export class MainScene extends BaseScene {
 			this.dragon.health = 2;
 			this.dragon.SHOOTING_TIMER = 5.5;
 			this.EGG_SPEED = 100;
+			this.EGG_HEALTH = 6;
 			this.dragon.following = this.player2;
 
 		}
@@ -77,6 +79,7 @@ export class MainScene extends BaseScene {
 			this.dragon.health = 3;
 			this.dragon.SHOOTING_TIMER = 4.5;
 			this.EGG_SPEED = 140;
+			this.EGG_HEALTH = 5;
 			this.dragon.following = this.player1;
 
 		}
@@ -85,6 +88,7 @@ export class MainScene extends BaseScene {
 			this.dragon.health = 4;
 			this.dragon.SHOOTING_TIMER = 4.0;
 			this.EGG_SPEED = 180;
+			this.EGG_HEALTH = 4;
 			this.dragon.following = this.player2;
 
 		}
@@ -92,6 +96,7 @@ export class MainScene extends BaseScene {
 
 			this.dragon.health = 5;
 			this.EGG_SPEED = 220;
+			this.EGG_HEALTH = 3;
 			this.dragon.SHOOTING_TIMER = 3.0;
 			this.dragon.following = this.player1;
 
@@ -99,7 +104,9 @@ export class MainScene extends BaseScene {
 
 		this.dragon.shootTimer = this.dragon.SHOOTING_TIMER - 2;
 
-		this.input.keyboard.on("keydown-ESC", this.progress, this);
+		this.input.keyboard.on("keydown-ESC", () => {
+			this.scene.start("OverworldScene", { level: this.level+1 });
+		}, this);
 	}
 
 	update(time: number, delta: number) {
@@ -112,16 +119,12 @@ export class MainScene extends BaseScene {
 			if (!egg.scene) {
 				this.eggs.splice(index, 1);
 				if (egg === this.dragon.following) {
-
-					// Follow nearest player
-					if (this.dragon.facing.x < 0) {
-						this.dragon.following = this.player1;
-					}
-					else {
-						this.dragon.following = this.player2;
-					}
+					this.followClosestTarget();
 				}
 				return;
+			}
+			if (egg === this.dragon.following && !egg.alive) {
+				this.followClosestTarget();
 			}
 
 			egg.update(time, delta);
@@ -142,6 +145,22 @@ export class MainScene extends BaseScene {
 			this.isRunning = false;
 			this.progress();
 		}
+
+
+		// Smarter dragon
+		if (this.level >= 2 || this.dragon.mood == "angry") {
+			if (this.dragon.following == this.player1) {
+				if (this.player2.heldEgg && !this.player1.heldEgg) {
+					this.dragon.following = this.player2;
+				}
+			}
+			else if (this.dragon.following == this.player2) {
+				if (this.player1.heldEgg && !this.player2.heldEgg) {
+					this.dragon.following = this.player1;
+				}
+			}
+		}
+
 	}
 
 
@@ -149,7 +168,8 @@ export class MainScene extends BaseScene {
 	onShootEgg() {
 		let x = this.dragon.x + 30 * this.dragon.facing.x;
 		let y = this.dragon.y + 30 * this.dragon.facing.y;
-		let egg = new Egg(this, x, y, this.EGG_SPEED);
+		let egg = new Egg(this, x, y, this.EGG_SPEED, this.level);
+		egg.health = this.EGG_HEALTH;
 		egg.grabOwner = this.dragon;
 		egg.velocity.x = this.EGG_SPEED*this.dragon.facing.x;
 		egg.velocity.y = this.EGG_SPEED*this.dragon.facing.y;
@@ -191,6 +211,16 @@ export class MainScene extends BaseScene {
 				this.dragon.following = player.heldEgg;
 			}
 			player.heldEgg = null;
+		}
+	}
+
+	followClosestTarget() {
+		// Follow nearest player
+		if (this.dragon.facing.x < 0) {
+			this.dragon.following = this.player1;
+		}
+		else {
+			this.dragon.following = this.player2;
 		}
 	}
 

@@ -61,7 +61,7 @@ export class OverworldScene extends BaseScene {
 			{ x:2*74, y:2*77 },
 			{ x:2*37, y:2*60 },
 			{ x:2*101, y:2*45 },
-			{ x:2*73, y:2*21 },
+			{ x:2*73, y:2*19 },
 		];
 		this.points = {};
 		this.curves = {};
@@ -174,6 +174,12 @@ export class OverworldScene extends BaseScene {
 			}
 		}, this);
 
+		// Skip
+		this.input.keyboard.on("keydown-ESC", () => {
+			if (this.level < 4) {
+				this.scene.start("MainScene", { level: this.level });
+			}
+		}, this);
 	}
 
 	update(time: number, delta: number) {
