@@ -104,7 +104,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 		// Walking animation
 		this.walkTimer += this.velocity.length() * delta/1000 / 12;
-		const walkFrame = Math.floor(this.walkTimer) % 2;
+		const walkFrame = Math.floor(this.walkTimer) % 4;
 		this.sprite.setFrame(walkFrame); // Walk is frame 0-1
 
 
