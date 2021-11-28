@@ -1,7 +1,7 @@
 import { BaseScene } from "../scenes/BaseScene";
 import { Egg } from "./Egg";
 
-const GRAB_RANGE = 30;
+const GRAB_RANGE = 40;
 
 
 export class Player extends Phaser.GameObjects.Container {
@@ -43,6 +43,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 		// Debug graphics
 		this.graphics = scene.add.graphics();
+		this.graphics.setVisible(false);
 		this.add(this.graphics);
 
 		// Movement
