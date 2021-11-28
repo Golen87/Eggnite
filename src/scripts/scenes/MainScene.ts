@@ -9,6 +9,7 @@ import { Egg } from "../components/Egg";
 
 export class MainScene extends BaseScene {
 	level: number;
+	isRunning: boolean;
 
 	myImage: Phaser.GameObjects.Image;
 
@@ -26,10 +27,11 @@ export class MainScene extends BaseScene {
 
 	init(data): void {
 		this.level = data.level;
+		this.isRunning = true;
 	}
 
 	create(): void {
-		this.fade(false, 200, 0x000000);
+		this.fade(false, 500, 0x000000);
 
 		// Adding an image
 		// https://rexrainbow.github.io/phaser3-rex-notes/docs/site/image/
@@ -41,7 +43,7 @@ export class MainScene extends BaseScene {
 		this.player1 = new Player1(this, 0.1*this.W, this.CY);
 		this.player2 = new Player2(this, 0.9*this.W, this.CY);
 
-		this.dragon = new Dragon(this, this.CX, this.CY);
+		this.dragon = new Dragon(this, this.CX, this.CY, this.level);
 		this.dragon.setDepth(10);
 
 		this.eggs = [];
@@ -65,6 +67,7 @@ export class MainScene extends BaseScene {
 		if (this.level == 0) {
 
 			this.dragon.health = 2;
+			this.dragon.SHOOTING_TIMER = 5.5;
 			this.EGG_SPEED = 100;
 			this.dragon.following = this.player2;
 
@@ -72,6 +75,7 @@ export class MainScene extends BaseScene {
 		else if (this.level == 1) {
 
 			this.dragon.health = 3;
+			this.dragon.SHOOTING_TIMER = 4.5;
 			this.EGG_SPEED = 140;
 			this.dragon.following = this.player1;
 
@@ -79,6 +83,7 @@ export class MainScene extends BaseScene {
 		else if (this.level == 2) {
 
 			this.dragon.health = 4;
+			this.dragon.SHOOTING_TIMER = 4.0;
 			this.EGG_SPEED = 180;
 			this.dragon.following = this.player2;
 
@@ -87,10 +92,14 @@ export class MainScene extends BaseScene {
 
 			this.dragon.health = 5;
 			this.EGG_SPEED = 220;
+			this.dragon.SHOOTING_TIMER = 3.0;
 			this.dragon.following = this.player1;
 
 		}
 
+		this.dragon.shootTimer = this.dragon.SHOOTING_TIMER - 2;
+
+		this.input.keyboard.on("keydown-ESC", this.progress, this);
 	}
 
 	update(time: number, delta: number) {
@@ -129,7 +138,8 @@ export class MainScene extends BaseScene {
 		});
 
 		// Check if destroyed
-		if (!this.dragon.scene) {
+		if (this.isRunning && !this.dragon.scene) {
+			this.isRunning = false;
 			this.progress();
 		}
 	}
@@ -185,11 +195,9 @@ export class MainScene extends BaseScene {
 	}
 
 	progress() {
-		this.addEvent(100, () => {
-			this.fade(true, 500, 0x000000);
-			this.addEvent(550, () => {
-				this.scene.start("OverworldScene", { level: this.level+1 });
-			});
+		this.fade(true, 500, 0x000000);
+		this.addEvent(550, () => {
+			this.scene.start("OverworldScene", { level: this.level+1 });
 		});
 	}
 }

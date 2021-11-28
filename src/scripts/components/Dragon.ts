@@ -1,10 +1,10 @@
 import { BaseScene } from "../scenes/BaseScene";
 import { Egg } from "./Egg";
+import { interpolateColor } from "../utils";
 
-const SHOOTING_TIMER = 5;
 const HURT_DURATION = 0.5;
-const DEATH_DURATION = 5; // Seconds
-const ANGRY_DURATION = 10; // Seconds
+const DEATH_DURATION = 3; // Seconds
+const ANGRY_DURATION = 12; // Seconds
 
 
 export class Dragon extends Phaser.GameObjects.Container {
@@ -12,6 +12,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 
 	// Graphics
 	private sprite: Phaser.GameObjects.Sprite;
+	private gem: Phaser.GameObjects.Sprite;
 	private graphics: Phaser.GameObjects.Graphics;
 
 	// Movement
@@ -21,7 +22,8 @@ export class Dragon extends Phaser.GameObjects.Container {
 	private border: { [key: string]: number };
 
 	// Shooting
-	private shootTimer: number;
+	public SHOOTING_TIMER: number;
+	public shootTimer: number;
 	public health: number;
 	private hurtTimer: number;
 	private deathTimer: number;
@@ -33,15 +35,21 @@ export class Dragon extends Phaser.GameObjects.Container {
 	private headAreas: Phaser.Geom.Circle[];
 	private weakAreas: Phaser.Geom.Circle[];
 
-	constructor(scene: BaseScene, x: number, y: number) {
+	constructor(scene: BaseScene, x: number, y: number, level: number) {
 		super(scene, x, y);
 		this.scene = scene;
 		scene.add.existing(this);
 
+		const frame = 2*level;
+
 		// Create player sprite
 		const size = 80;
-		this.sprite = scene.add.sprite(0, 0, "dragon", 0);
+		this.sprite = scene.add.sprite(0, 0, "dragon", frame);
 		this.add(this.sprite); // Attach sprite to the Player-component
+
+		this.gem = scene.add.sprite(0, 0, "gem", frame);
+		// this.gem.setBlendMode(Phaser.BlendModes.SCREEN);
+		this.add(this.gem); // Attach sprite to the Player-component
 
 		// Animation
 		// idle 0
@@ -62,7 +70,8 @@ export class Dragon extends Phaser.GameObjects.Container {
 			bottom: scene.H - size/2,
 		};
 
-		this.shootTimer = SHOOTING_TIMER - 1;
+		this.SHOOTING_TIMER = 0;
+		this.shootTimer = 0;
 		this.health = 5;
 		this.hurtTimer = 0;
 		this.deathTimer = 0;
@@ -143,17 +152,18 @@ export class Dragon extends Phaser.GameObjects.Container {
 
 			// Shooting eggs
 			this.shootTimer += delta/1000;
-			if (this.shootTimer > SHOOTING_TIMER) {
+			if (this.shootTimer > this.SHOOTING_TIMER) {
 				this.shootTimer = 0;
 				this.emit("shoot");
 			}
 
 			const k = 0.8;
 			let squish = 1;
-			if (SHOOTING_TIMER - this.shootTimer < 1.0) {
-				squish = k + (1-k) * (SHOOTING_TIMER - this.shootTimer);
+			if (this.SHOOTING_TIMER - this.shootTimer < 1.0) {
+				squish = k + (1-k) * (this.SHOOTING_TIMER - this.shootTimer);
 			}
 			this.sprite.scaleX = squish;
+			this.gem.scaleX = squish;
 
 
 			// AI State
@@ -177,22 +187,33 @@ export class Dragon extends Phaser.GameObjects.Container {
 			this.sprite.setTint(blink ? 0xFF0000 : 0xFFFFFF);
 			this.sprite.setAlpha(0.75);
 			this.sprite.setOrigin(0.5 + 0.02 * Math.sin(35*time/1000), 0.5);
+			this.gem.setTint(blink ? 0xFFFFFF : 0xFF0000);
+			this.gem.setAlpha(0.75);
+			this.gem.setOrigin(0.5 + 0.02 * Math.sin(35*time/1000), 0.5);
 		}
 		else {
 			this.sprite.setTint(0xFFFFFF);
 			this.sprite.setAlpha(1);
 			this.sprite.setOrigin(0.5, 0.5);
 
+			const k = Math.pow(0.5 + 0.5 * Math.sin(6*time/1000), 2);
+			this.gem.setTint(interpolateColor(0xFFFFFF, 0xAAAAAA, k));
+			// this.gem.setScale(1.0 + 0.05 * k);
+			this.gem.setAlpha(1.0 + 0.4*k);
+			this.gem.setOrigin(0.5, 0.5);
+
 			if (this.mood == "angry") {
 				this.sprite.setOrigin(0.5, 0.5 + 0.005 * Math.sin(35*time/1000));
+				this.gem.setOrigin(0.5, 0.5 + 0.005 * Math.sin(35*time/1000));
 			}
 		}
 
 		// Check if dead
 		if (!this.alive) {
 			this.deathTimer += delta/1000;
-			this.setScale(1 - this.deathTimer / DEATH_DURATION);
-			this.setAlpha(1 - (1.5*this.deathTimer) / DEATH_DURATION);
+			this.gem.setVisible(false);
+			this.setScale(1 - 0.5 * this.deathTimer / DEATH_DURATION);
+			this.setAlpha(1 - this.deathTimer / DEATH_DURATION);
 			if (this.deathTimer > DEATH_DURATION) {
 				this.destroy();
 			}
@@ -239,9 +260,9 @@ export class Dragon extends Phaser.GameObjects.Container {
 		this.mood = "angry";
 		this.moodTimer = ANGRY_DURATION;
 
-		if (this.health <= 0) {
-			this.scene.createText(this.scene.CX, this.scene.CY, 25, this.scene.weights.bold, "#DDD", "DEFEATED").setOrigin(0.5);
-		}
+		// if (this.health <= 0) {
+			// this.scene.createText(this.scene.CX, this.scene.CY, 25, this.scene.weights.bold, "#DDD", "DEFEATED").setOrigin(0.5);
+		// }
 	}
 
 	get alive() {

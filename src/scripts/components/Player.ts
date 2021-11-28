@@ -34,7 +34,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 		// Create player sprite
 		this.sprite = scene.add.sprite(0, 0, "player", 0);
-		this.sprite.setOrigin(0.5, 0.2);
+		// this.sprite.setOrigin(0.5, 0.2);
 		this.add(this.sprite); // Attach sprite to the Player-component
 
 		// Animation
@@ -128,7 +128,7 @@ export class Player extends Phaser.GameObjects.Container {
 		// Egg
 		if (this.heldEgg) {
 			this.heldEgg.x = this.x;
-			this.heldEgg.y = this.y;
+			this.heldEgg.y = this.y - 15;
 			this.heldEgg.facing.copy(this.facing);
 		}
 
@@ -141,7 +141,7 @@ export class Player extends Phaser.GameObjects.Container {
 	}
 
 	canGrab(egg: Egg) {
-		let point = new Phaser.Math.Vector2(this.x, this.y+20);
+		let point = new Phaser.Math.Vector2(this.x, this.y);
 		let dist = Phaser.Math.Distance.BetweenPoints(point, egg);
 
 		return (dist < GRAB_RANGE && egg.canGrab(this));
