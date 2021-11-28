@@ -16,11 +16,13 @@ interface SpriteSheet {
 /* Images */
 
 import pika from "../assets/images/pikadrawer.jpg";
+import ground from "../assets/images/ground.png";
 import volcano from "../assets/images/volcano.png";
 import clouds from "../assets/images/clouds.png";
 
 const images: Asset[] = [
 	{ key: "pika",		path: pika },
+	{ key: "ground",		path: ground },
 	{ key: "volcano",	path: volcano },
 	{ key: "clouds",	path: clouds },
 ];
