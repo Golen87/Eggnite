@@ -45,7 +45,7 @@ export class OverworldScene extends BaseScene {
 		this.fitToScreen(this.clouds2);
 		this.fitToScreen(volcano);
 
-		this.player = this.add.image(this.CX, this.CY, "mapplayer");
+		this.player = this.add.image(this.CX, this.CY, "mapplayer", 0);
 		this.player.setOrigin(0.5, 0.7);
 		this.player.setDepth(10);
 
@@ -182,7 +182,7 @@ export class OverworldScene extends BaseScene {
 		this.clouds1.x = (20 * time/1000) % this.W;
 		this.clouds2.x = this.clouds1.x - this.W;
 
-		this.player.flipX = anim;
+		this.player.setFrame(anim ? 0: 1);
 
 		if (this.victory) {
 			this.victory.setScale(1.0 + 0.1*Math.sin(5*time/1000));
