@@ -1,5 +1,6 @@
 import { BaseScene } from "../scenes/BaseScene";
 import { Egg } from "./Egg";
+import { interpolateColor } from "../utils";
 
 const GRAB_RANGE = 40;
 const THROW_DURATION = 0.3;
@@ -21,6 +22,7 @@ export class Player extends Phaser.GameObjects.Container {
 	protected walkTimer: number; // Increases while moving, modulo to set frame
 	protected throwTimer: number;
 	public heldEgg: Egg | null;
+	public holdTimer: number;
 
 	// Movement
 	protected inputVec: Phaser.Math.Vector2; // Just used for keyboard -> vector
@@ -28,6 +30,8 @@ export class Player extends Phaser.GameObjects.Container {
 	public velocity: Phaser.Math.Vector2;
 	public facing: Phaser.Math.Vector2; // Used to determine throwing dir
 	protected border: { [key: string]: number }; 
+
+	public HOLD_DURATION: number = 10;
 
 	constructor(scene: BaseScene, x: number, y: number) {
 		super(scene, x, y);
@@ -44,6 +48,7 @@ export class Player extends Phaser.GameObjects.Container {
 		this.walkTimer = 0;
 		this.throwTimer = 0;
 		this.heldEgg = null;
+		this.holdTimer = 0;
 		// walk 0, 1
 		// lift 4, 5
 		// hurt 8
@@ -102,6 +107,10 @@ export class Player extends Phaser.GameObjects.Container {
 			this.facing.copy(this.velocity);
 			this.facing.normalize();
 		}
+		if (this.isTouched && this.inputVec.lengthSq() > 0) {
+			this.facing.copy(this.inputVec);
+			this.facing.normalize();
+		}
 
 		// Border collision
 		if (this.x < this.border.left) {
@@ -146,6 +155,25 @@ export class Player extends Phaser.GameObjects.Container {
 			this.heldEgg.x = this.x;
 			this.heldEgg.y = this.y - 15;
 			this.heldEgg.facing.copy(this.facing);
+
+			this.holdTimer = Math.min(this.holdTimer + delta/1000, this.HOLD_DURATION);
+		}
+		else {
+			this.holdTimer = Math.max(this.holdTimer - delta/1000, 0);
+		}
+
+
+		// Heat
+		let heatFactor = this.holdTimer / this.HOLD_DURATION;
+		this.sprite.setTint(interpolateColor(0xFFFFFF, 0xFF3333, heatFactor));
+		if (this.heldEgg && this.holdTimer >= this.HOLD_DURATION) {
+			this.grab();
+		}
+		if (this.holdTimer >= this.HOLD_DURATION - 5) {
+			let fac = (this.holdTimer - this.HOLD_DURATION + 5) / (this.HOLD_DURATION);
+			if (Math.random() < 0.1 + 0.3 * fac) {
+				this.emit("sweat");
+			}
 		}
 
 

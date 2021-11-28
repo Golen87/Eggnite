@@ -63,6 +63,31 @@ class Particle extends Phaser.GameObjects.Sprite {
 		this.lifeTime = 1.5 + 1*Math.random();
 	}
 
+	sweat(x: number, y: number, flip: boolean) {
+		this.init(x, y, "sweat");
+
+		this.setAngle(360*Math.random());
+		this.setData("scale", 1 - 0.5 * Math.random());
+		this.setScale(this.getData("scale"));
+		this.setFrame(Math.floor(4 * Math.random()));
+
+		this.vel.setToPolar(
+			-0.0*Math.PI + 0.2*Math.PI * Math.random(),
+			20 + 40*Math.random()
+		);
+
+		if (!flip) {
+			this.vel.x *= -1;
+		}
+
+		this.pos.x += -2 + 4*Math.random() + (flip ? 2 : -2);
+		this.pos.y += -2 + 4*Math.random() + -3;
+
+		this.setData("airtime", 0.4 + 0.3 * Math.random());
+
+		this.lifeTime = 0.4 + 0.4*Math.random();
+	}
+
 	lava(x: number, y: number) {
 		this.init(x, y, "lavabubble");
 
@@ -74,6 +99,20 @@ class Particle extends Phaser.GameObjects.Sprite {
 
 	update(time: number, delta: number) {
 		if (this.myType == "shell") {
+			const k = this.getData("airtime");
+			if (this.life > k) {
+				this.vel.reset();
+				this.acc.reset();
+				this.offset.y = 5;
+				let fade = 1 - (this.life-k) / (this.lifeTime-k);
+				this.setScale(fade * this.getData("scale"));
+			}
+			else {
+				this.offset.y = - 10 * Math.sin(this.life/k * Math.PI) + 5 * this.life/k;
+			}
+		}
+
+		if (this.myType == "sweat") {
 			const k = this.getData("airtime");
 			if (this.life > k) {
 				this.vel.reset();
@@ -165,6 +204,12 @@ export class Particles extends Phaser.GameObjects.Container {
 	createShells(x: number, y: number, amount: number, tint: number) {
 		this.getFreeParticles(amount).forEach((particle) => {
 			particle.shell(x, y, tint);
+		});
+	}
+
+	createSweat(x: number, y: number, flip: boolean) {
+		this.getFreeParticles(1).forEach((particle) => {
+			particle.sweat(x, y, flip);
 		});
 	}
 

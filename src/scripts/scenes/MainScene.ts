@@ -76,6 +76,8 @@ export class MainScene extends BaseScene {
 		this.player2.on("grab", this.onGrab.bind(this, this.player2));
 		this.player1.on("throw", this.onThrow.bind(this, this.player1));
 		this.player2.on("throw", this.onThrow.bind(this, this.player2));
+		this.player1.on("sweat", this.onSweat.bind(this, this.player1));
+		this.player2.on("sweat", this.onSweat.bind(this, this.player2));
 		this.dragon.on("shoot", this.onShootEgg.bind(this));
 
 
@@ -83,6 +85,8 @@ export class MainScene extends BaseScene {
 
 		if (this.level == 0) {
 
+			this.player1.HOLD_DURATION = 14;
+			this.player2.HOLD_DURATION = 14;
 			this.dragon.health = 2;
 			this.dragon.SHOOTING_TIMER = 5.5;
 			this.EGG_SPEED = 100;
@@ -92,6 +96,8 @@ export class MainScene extends BaseScene {
 		}
 		else if (this.level == 1) {
 
+			this.player1.HOLD_DURATION = 9;
+			this.player2.HOLD_DURATION = 9;
 			this.dragon.health = 3;
 			this.dragon.SHOOTING_TIMER = 4.5;
 			this.EGG_SPEED = 140;
@@ -101,6 +107,8 @@ export class MainScene extends BaseScene {
 		}
 		else if (this.level == 2) {
 
+			this.player1.HOLD_DURATION = 7;
+			this.player2.HOLD_DURATION = 7;
 			this.dragon.health = 4;
 			this.dragon.SHOOTING_TIMER = 4.0;
 			this.EGG_SPEED = 180;
@@ -110,6 +118,8 @@ export class MainScene extends BaseScene {
 		}
 		else if (this.level == 3) {
 
+			this.player1.HOLD_DURATION = 5;
+			this.player2.HOLD_DURATION = 5;
 			this.dragon.health = 5;
 			this.EGG_SPEED = 220;
 			this.EGG_HEALTH = 3;
@@ -273,6 +283,11 @@ export class MainScene extends BaseScene {
 			}
 			player.heldEgg = null;
 		}
+	}
+
+	// On player sweating
+	onSweat(player: Player) {
+		this.particles.createSweat(player.x, player.y, player.facing.x < 0);
 	}
 
 	followClosestTarget() {
