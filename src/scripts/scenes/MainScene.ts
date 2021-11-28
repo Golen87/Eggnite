@@ -44,6 +44,7 @@ export class MainScene extends BaseScene {
 		this.myImage = this.add.image(this.CX, this.CY, "pika");
 		this.ground = this.add.image(this.CX, this.CY, "ground");
 		this.myImage.setTint(0xFF0000);
+		this.myImage.setBlendMode(Phaser.BlendModes.ADD);
 		this.myImage.setAlpha(0.2);
 		this.containToScreen(this.lava);
 		this.containToScreen(this.ground);
@@ -156,6 +157,8 @@ export class MainScene extends BaseScene {
 		this.player1.update(time, delta);
 		this.player2.update(time, delta);
 		this.dragon.update(time, delta);
+
+		this.myImage.setAlpha(0.2 + 0.1 * Math.sin(5*time/1000));
 
 		this.particles.update(time, delta);
 
