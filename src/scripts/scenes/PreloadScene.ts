@@ -3,6 +3,7 @@ import { images, spritesheets } from "../assets";
 import { GrayScalePostFilter } from "../pipelines/GrayScalePostFilter";
 import { BlurPostFilter } from "../pipelines/BlurPostFilter";
 import BendWaves from "../pipelines/BendWavesPostFX";
+import BendWaves2 from "../pipelines/BendWavesPostFX2";
 
 
 export class PreloadScene extends BaseScene {
@@ -17,19 +18,22 @@ export class PreloadScene extends BaseScene {
 			renderer.pipelines.addPostPipeline("GrayScalePostFilter", GrayScalePostFilter);
 			renderer.pipelines.addPostPipeline("BlurPostFilter", BlurPostFilter);
 			renderer.pipelines.addPostPipeline("BendWaves", BendWaves);
+			renderer.pipelines.addPostPipeline("BendWaves2", BendWaves2);
 		}
 	}
 
 	preload() {
+		this.cameras.main.setBackgroundColor(0xFFFFFF);
+
 		// Loading bar
 		let width = 0.5 * this.W;
 		let x = this.CX - width/2;
 		let y = this.CY;
 		let bg = this.add.rectangle(x, y, width, 2, 0x666666).setOrigin(0, 0.5);
-		let bar = this.add.rectangle(x, y, 1, 4, 0xDDDDDD).setOrigin(0, 0.5);
+		let bar = this.add.rectangle(x, y, 1, 4, 0x333333).setOrigin(0, 0.5);
 
 		// Loading text
-		let text = this.createText(x, y, 8, this.weights.bold, "#DDD", "Loading...").setOrigin(0, 1.5);
+		let text = this.createText(x, y, 8, this.weights.bold, "#333", "Loading...").setOrigin(0, 1.5);
 
 		// Listener
 		this.load.on("progress", (progress) => {
@@ -49,7 +53,7 @@ export class PreloadScene extends BaseScene {
 	}
 
 	create() {
-		this.fade(true, 100, 0x000000);
+		this.fade(true, 100, 0xFFFFFF);
 		this.addEvent(110, () => {
 			this.scene.start("MenuScene");
 		});
