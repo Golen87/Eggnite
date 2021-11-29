@@ -1,4 +1,4 @@
-import { BaseScene } from "../scenes/BaseScene";
+import { MainScene } from "../scenes/MainScene";
 import { Egg } from "./Egg";
 import { interpolateColor } from "../utils";
 
@@ -7,7 +7,7 @@ const THROW_DURATION = 0.3;
 
 
 export class Player extends Phaser.GameObjects.Container {
-	public scene: BaseScene;
+	public scene: MainScene;
 
 	// Input
 	protected keys: any;
@@ -33,7 +33,7 @@ export class Player extends Phaser.GameObjects.Container {
 
 	public HOLD_DURATION: number = 10;
 
-	constructor(scene: BaseScene, x: number, y: number) {
+	constructor(scene: MainScene, x: number, y: number) {
 		super(scene, x, y);
 		this.scene = scene;
 		scene.add.existing(this);
@@ -70,23 +70,42 @@ export class Player extends Phaser.GameObjects.Container {
 			bottom: scene.H-20,
 		};
 
+
+		// Intro
+		this.y += 170;
 	}
 
 	update(time: number, delta: number) {
 
+		this.inputVec.reset();
+
 		// Keyboard input to vector
-		if (!this.isTouched) {
-			this.inputVec.reset();
-			this.inputVec.x = (this.keys.left.isDown ? -1 : 0) + (this.keys.right.isDown ? 1 : 0);
-			this.inputVec.y = (this.keys.up.isDown ? -1 : 0) + (this.keys.down.isDown ? 1 : 0);
+		if (!this.scene.introPlaying) {
+			if (!this.isTouched) {
+				this.inputVec.x = (this.keys.left.isDown ? -1 : 0) + (this.keys.right.isDown ? 1 : 0);
+				this.inputVec.y = (this.keys.up.isDown ? -1 : 0) + (this.keys.down.isDown ? 1 : 0);
+			}
+			// Touch to input vector
+			else {
+				this.inputVec.copy(this.touchPos);
+				this.inputVec.x -= this.x;
+				this.inputVec.y -= this.y;
+				if (this.inputVec.length() < 8) {
+					this.inputVec.reset();
+				}
+			}
 		}
-		// Touch to input vector
 		else {
-			this.inputVec.copy(this.touchPos);
-			this.inputVec.x -= this.x;
-			this.inputVec.y -= this.y;
-			if (this.inputVec.length() < 8) {
-				this.inputVec.reset();
+			// Cutscene
+			if (this.scene.dragon.alive) {
+				if (this.y > 0.55 * this.scene.H) {
+					this.inputVec.y = -1;
+					this.inputVec.x = 0.01 * Math.sign(this.scene.CX - this.x);
+				}
+			}
+			else if (this.scene.outroPlaying) {
+				this.inputVec.y = 1;
+				this.inputVec.x = -0.01 * Math.sign(this.scene.CX - this.x);
 			}
 		}
 
@@ -113,17 +132,19 @@ export class Player extends Phaser.GameObjects.Container {
 		}
 
 		// Border collision
-		if (this.x < this.border.left) {
-			this.x = this.border.left;
-		}
-		if (this.x > this.border.right) {
-			this.x = this.border.right;
-		}
-		if (this.y < this.border.top) {
-			this.y = this.border.top;
-		}
-		if (this.y > this.border.bottom) {
-			this.y = this.border.bottom;
+		if (!this.scene.introPlaying) {
+			if (this.x < this.border.left) {
+				this.x = this.border.left;
+			}
+			if (this.x > this.border.right) {
+				this.x = this.border.right;
+			}
+			if (this.y < this.border.top) {
+				this.y = this.border.top;
+			}
+			if (this.y > this.border.bottom) {
+				this.y = this.border.bottom;
+			}
 		}
 
 
@@ -153,7 +174,7 @@ export class Player extends Phaser.GameObjects.Container {
 		// Egg
 		if (this.heldEgg) {
 			this.heldEgg.x = this.x;
-			this.heldEgg.y = this.y - 15;
+			this.heldEgg.y = this.y - 13;
 			this.heldEgg.facing.copy(this.facing);
 
 			this.holdTimer = Math.min(this.holdTimer + delta/1000, this.HOLD_DURATION);
@@ -194,7 +215,7 @@ export class Player extends Phaser.GameObjects.Container {
 	grab() {
 		if (this.heldEgg) {
 			this.heldEgg.x = this.x;
-			this.heldEgg.y = this.y - 5;
+			this.heldEgg.y = this.y - 7;
 			this.emit("throw");
 			this.throwTimer = THROW_DURATION;
 		}

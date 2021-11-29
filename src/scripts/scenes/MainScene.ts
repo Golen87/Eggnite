@@ -23,6 +23,10 @@ export class MainScene extends BaseScene {
 	dragon: Dragon;
 	eggs: Egg[];
 
+	public introPlaying: boolean;
+	public outroPlaying: boolean;
+	public shakeCamera: boolean;
+
 	public EGG_SPEED: number;
 	public EGG_HEALTH: number;
 
@@ -37,10 +41,13 @@ export class MainScene extends BaseScene {
 	}
 
 	create(): void {
-		this.fade(false, 500, 0x000000);
+		this.fade(false, 1000, 0x000000);
+
+		this.introPlaying = true;
+		this.outroPlaying = false;
+		this.shakeCamera = false;
 
 		// Adding an image
-		// https://rexrainbow.github.io/phaser3-rex-notes/docs/site/image/
 		this.lava = this.add.image(this.CX, this.CY, "lava");
 		this.lava.setPostPipeline(BendWaves);
 		this.pika = this.add.image(this.CX, this.CY, "pika");
@@ -79,6 +86,7 @@ export class MainScene extends BaseScene {
 		this.player1.on("sweat", this.onSweat.bind(this, this.player1));
 		this.player2.on("sweat", this.onSweat.bind(this, this.player2));
 		this.dragon.on("shoot", this.onShootEgg.bind(this));
+		this.dragon.on("defeated", this.onDragonDefeated.bind(this));
 
 
 		// Level settings
@@ -166,6 +174,9 @@ export class MainScene extends BaseScene {
 		this.input.keyboard.on("keydown-ESC", () => {
 			this.scene.start("OverworldScene", { level: this.level+1 });
 		}, this);
+
+
+		this.showIntro();
 	}
 
 	update(time: number, delta: number) {
@@ -205,17 +216,18 @@ export class MainScene extends BaseScene {
 				this.dragon.damage();
 				this.dragon.following = egg.grabOwner; // Enraged
 				egg.onDamage(999);
+
+				if (this.dragon.alive) {
+					this.shakeCamera = true;
+					this.addEvent(400, () => {
+						this.shakeCamera = false;
+					});
+				}
 			}
 			else if (this.dragon.insideHead(egg)) {
 				egg.onDamage(999);
 			}
 		});
-
-		// Check if destroyed
-		if (this.isRunning && !this.dragon.scene) {
-			this.isRunning = false;
-			this.progress();
-		}
 
 
 		// Smarter dragon
@@ -230,6 +242,35 @@ export class MainScene extends BaseScene {
 					this.dragon.following = this.player1;
 				}
 			}
+		}
+
+
+		// Camera shake
+
+		if (this.shakeCamera) {
+			this.cameras.main.x = Math.sin(100 * time/1000);
+
+			this.particles.createLava(
+				this.dragon.x + 40 * (-1+2*Math.random()),
+				this.dragon.y + 40 * (-1+2*Math.random())
+			);
+		}
+		else {
+			this.cameras.main.x = 0;
+
+			if (Math.random() < 0.1) {
+				this.particles.createLava(
+					this.dragon.x + 20 * (-1+2*Math.random()),
+					this.dragon.y + 20 * (-1+2*Math.random())
+				);
+			}
+		}
+
+
+		// Check ending
+		if (this.isRunning && this.outroPlaying && this.player1.y > this.H && this.player2.y > this.H) {
+			this.progress();
+			this.isRunning = false;
 		}
 
 	}
@@ -285,6 +326,19 @@ export class MainScene extends BaseScene {
 		}
 	}
 
+	onDragonDefeated() {
+		this.introPlaying = true;
+		this.shakeCamera = true;
+
+		this.addEvent(this.dragon.DEATH_DURATION*1000, () => {
+			this.shakeCamera = false;
+
+			this.addEvent(1000, () => {
+				this.outroPlaying = true;
+			});
+		});
+	}
+
 	// On player sweating
 	onSweat(player: Player) {
 		this.particles.createSweat(player.x, player.y, player.facing.x < 0);
@@ -300,8 +354,32 @@ export class MainScene extends BaseScene {
 		}
 	}
 
+
+	showIntro() {
+		this.dragon.setScale(0.5);
+		this.dragon.setAlpha(0);
+
+		this.addEvent(2500, () => {
+			this.shakeCamera = true;
+
+			let tween = this.tweens.add({
+				targets: [this.dragon],
+				alpha: { from: 0, to: 1 },
+				scaleX: { from: 0.5, to: 1 },
+				scaleY: { from: 0.5, to: 1 },
+				ease: 'Cubic.Out',
+				duration: 2000,
+				delay: 1000,
+			});
+			tween.on('complete', () => {
+				this.introPlaying = false;
+				this.shakeCamera = false;
+			}, this);
+		});
+	}
+
 	progress() {
-		this.fade(true, 500, 0x000000);
+		this.fade(true, 500, 0xFFFFFF);
 		this.addEvent(550, () => {
 			this.scene.start("OverworldScene", { level: this.level+1 });
 		});

@@ -1,8 +1,8 @@
-import { BaseScene } from "../scenes/BaseScene";
+import { MainScene } from "../scenes/MainScene";
 import { Player } from "./Player";
 
 export class Player2 extends Player {
-	constructor(scene: BaseScene, x: number, y: number) {
+	constructor(scene: MainScene, x: number, y: number) {
 		super(scene, x, y);
 
 		this.sprite.setTexture("player2");

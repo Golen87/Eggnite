@@ -1,14 +1,13 @@
-import { BaseScene } from "../scenes/BaseScene";
+import { MainScene } from "../scenes/MainScene";
 import { Egg } from "./Egg";
 import { interpolateColor } from "../utils";
 
 const HURT_DURATION = 0.7;
-const DEATH_DURATION = 3; // Seconds
 const ANGRY_DURATION = 12; // Seconds
 
 
 export class Dragon extends Phaser.GameObjects.Container {
-	public scene: BaseScene;
+	public scene: MainScene;
 	public level: number;
 
 	// Graphics
@@ -24,7 +23,6 @@ export class Dragon extends Phaser.GameObjects.Container {
 	private border: { [key: string]: number };
 
 	// Shooting
-	public SHOOTING_TIMER: number;
 	public shootTimer: number;
 	public health: number;
 	public sustained: number; // Just used for animation
@@ -41,7 +39,10 @@ export class Dragon extends Phaser.GameObjects.Container {
 
 	private goalPoints: Phaser.Math.Vector2[];
 
-	constructor(scene: BaseScene, x: number, y: number, level: number) {
+	public SHOOTING_TIMER: number;
+	public DEATH_DURATION: number = 3; // Seconds
+
+	constructor(scene: MainScene, x: number, y: number, level: number) {
 		super(scene, x, y);
 		this.scene = scene;
 		this.level = level;
@@ -79,6 +80,7 @@ export class Dragon extends Phaser.GameObjects.Container {
 			top: size/2,
 			bottom: scene.H - size/2,
 		};
+		this.setAngle(this.facing.angle() * Phaser.Math.RAD_TO_DEG);
 
 		this.SHOOTING_TIMER = 0;
 		this.shootTimer = 0;
@@ -118,36 +120,8 @@ export class Dragon extends Phaser.GameObjects.Container {
 
 	update(time: number, delta: number) {
 		// Movement
-		/*
-		const speed = 25;
 
-		this.x += this.velocity.x * delta/1000;
-		this.y += this.velocity.y * delta/1000;
-		this.velocity.scale(0.9);
-
-		if (this.velocity.lengthSq() > 0) {
-			this.facing.copy(this.velocity);
-			this.facing.normalize();
-		}
-
-		if (this.x < this.border.left) {
-			this.x = this.border.left;
-		}
-		if (this.x > this.border.right) {
-			this.x = this.border.right;
-		}
-		if (this.y < this.border.top) {
-			this.y = this.border.top;
-		}
-		if (this.y > this.border.bottom) {
-			this.y = this.border.bottom;
-		}
-		*/
-
-		// Simple rotation test
-		//this.facing.rotate(-0.3*Math.PI * delta/1000);
-
-		if (this.alive) {
+		if (this.alive && !this.scene.introPlaying) {
 
 			let target = new Phaser.Math.Vector2();
 			if (this.following) {
@@ -258,9 +232,9 @@ export class Dragon extends Phaser.GameObjects.Container {
 			this.deathTimer += delta/1000;
 			this.gem.setVisible(false);
 			this.light.setVisible(false);
-			this.setScale(1 - 0.5 * this.deathTimer / DEATH_DURATION);
-			this.setAlpha(1 - this.deathTimer / DEATH_DURATION);
-			if (this.deathTimer > DEATH_DURATION) {
+			this.setScale(1 - 0.5 * this.deathTimer / this.DEATH_DURATION);
+			this.setAlpha(1 - this.deathTimer / this.DEATH_DURATION);
+			if (this.deathTimer > this.DEATH_DURATION) {
 				this.destroy();
 			}
 		}
@@ -307,9 +281,10 @@ export class Dragon extends Phaser.GameObjects.Container {
 		this.mood = "angry";
 		this.moodTimer = ANGRY_DURATION;
 
-		// if (this.health <= 0) {
+		if (this.health <= 0) {
+			this.emit("defeated");
 			// this.scene.createText(this.scene.CX, this.scene.CY, 25, this.scene.weights.bold, "#DDD", "DEFEATED").setOrigin(0.5);
-		// }
+		}
 	}
 
 	get alive() {
